@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import "./App.css";
 import Calendar from "./Frontend/components/Calendar";
 import LoginScreen from "./Frontend/components/LoginScreen";
+import EmployeeDashboard from "./Frontend/components/EmployeeDashboard";
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -23,7 +24,7 @@ export default function App() {
       {!isLoggedIn ? (
         <LoginScreen onLogin={handleLogin} />
       ) : (
-        <Calendar />
+        <EmployeeDashboard onLogout={handleLogout} />
       )}
     </div>
   );

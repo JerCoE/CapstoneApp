@@ -132,7 +132,7 @@ export default function Calendar() {
   const removeLeave = (date: string) => {
     setLeaves((prev) => prev.filter((p) => p.date !== date));
   };
-/*
+/*     //API INTEGRATION for CALENDAR MS TEAMS
   // MSAL / Graph integration (unchanged) - events will be mapped to local days above
   useEffect(() => {
     if (!isAuthenticated) return;

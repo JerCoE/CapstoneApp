@@ -16,10 +16,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="BackgroundPortal">
-      <div className="login-container">
-        <h2 style={{ textAlign: 'center' }}>ERNI Login Portal</h2>
-        <form onSubmit={handleSubmit}>
+    <div className="Pausepoint"><span className="pausepoint-text">PausePoint</span>
+    <div className="BackgroundLogo">
+       <div className="BGtext">
+          <div className="login-container">
+           <h2 style={{ textAlign: 'center', fontWeight: '600', color: '#113372' }}>Login</h2>
+             <form onSubmit={handleSubmit}>
           <div>
             <label htmlFor="email">Email</label>
             <input
@@ -45,8 +47,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             />
           </div>
           <button type="submit">Enter</button>
-        </form>
+         </form>
+        </div>
       </div>
+     </div>
     </div>
   );
 };

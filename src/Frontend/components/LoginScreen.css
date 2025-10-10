@@ -1,20 +1,56 @@
-.BackgroundPortal {
-  background-image: url('/ERNI_teams_white 1.jpg');
-  background-size: contain;
-  background-position: center;
+.BackgroundLogo {
+  background-image: url('/ERNI logo.png');
+  background-size: 600px;
+  background-position: 700px 50px;
   background-repeat: no-repeat;
   height: 100vh;
   width: 100vw;
-
+  position: relative;
   
 }
 
+
+.Pausepoint {
+    background-image: url('/ERNI logo.png');
+    background-position: 30px 175px;
+    background-repeat: no-repeat;
+    background-size: 75px;
+    position: relative; /* make this the positioning context for the text */
+    /* ensure the logo area has space so the background image is visible */
+    min-height: 220px;
+    padding-top: 20px;
+}
+.pausepoint-text{
+    position: absolute;
+    left: 110px; /* match background-position x */
+    top: 220px; /* match background-position y */
+    transform: translateY(-50%); /* vertically center the text on the logo */
+    font-weight: 60px;
+    font-family: 'Lexend', sans-serif;
+    font-size: 48px;
+    font-style: normal;
+    color: #113372;
+    pointer-events: none;
+}
+.BGtext{
+    background-image: url('/ERNI text.png');
+    text-align: center;
+    background-size: 300px;
+    background-position: 800px 700px;
+    background-repeat: no-repeat;
+    position: relative;
+    height: 100vh;
+    width: 100vw;
+}
 .login-container {
 
     width: 300px;
     margin: 100px auto;
     padding: 30px;
-    position: center;
+    position: absolute;
+    top: 150px;
+    left: 10%;
+    transform: translateX(-50%);
     border: 1px solid #ccc;
     border-radius: 30px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
