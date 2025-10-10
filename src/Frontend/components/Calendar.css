@@ -1,0 +1,268 @@
+.calendar-root {
+  display: flex;
+  gap: 0;
+  padding: 0;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+  background: #f3f2f1;
+  min-height: 100vh;
+}
+
+.calendar-main {
+  flex: 1;
+  background: #ffffff;
+  border-right: 1px solid #e1dfdd;
+}
+
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  border-bottom: 1px solid #e1dfdd;
+  background: #ffffff;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+}
+
+.calendar-nav button {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  color: #323130;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  font-weight: 400;
+}
+
+.calendar-nav button:hover {
+  background: #f3f2f1;
+}
+
+.nav-left button {
+  font-size: 18px;
+  padding: 4px 8px;
+}
+
+.nav-right button {
+  border: 1px solid #8a8886;
+  font-weight: 600;
+}
+
+.calendar-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #323130;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #ffffff;
+}
+
+.calendar-weekday {
+  text-align: center;
+  color: #605e5c;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  padding: 12px 0;
+  border-bottom: 1px solid #e1dfdd;
+  background: #faf9f8;
+}
+
+.calendar-cell {
+  min-height: 120px;
+  background: #ffffff;
+  border-right: 1px solid #e1dfdd;
+  border-bottom: 1px solid #e1dfdd;
+  padding: 8px;
+  text-align: left;
+  position: relative;
+  transition: background-color 0.1s ease;
+}
+
+.calendar-cell.empty {
+  background: #faf9f8;
+}
+
+.calendar-cell.day {
+  cursor: pointer;
+}
+
+.calendar-cell.day:hover {
+  background: #f8f7f6;
+}
+
+.calendar-cell.today {
+  background: #fff4ce;
+  border: 2px solid #ffb900;
+}
+
+.calendar-cell.selected {
+  background: #deecf9;
+  border: 2px solid #0078d4;
+}
+
+.calendar-cell.leave {
+  background: #fef7f1;
+  border-left: 4px solid #d83b01;
+}
+
+.cell-number {
+  font-weight: 600;
+  font-size: 14px;
+  color: #323130;
+  margin-bottom: 4px;
+}
+
+.calendar-cell.today .cell-number {
+  color: #8a8886;
+}
+
+.leave-marker {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #d83b01;
+  border-radius: 50%;
+  right: 6px;
+  top: 6px;
+}
+
+.calendar-side {
+  width: 320px;
+  background: #faf9f8;
+  border-left: 1px solid #e1dfdd;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.calendar-side h3 {
+  color: #323130;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+}
+
+.side-box {
+  background: #ffffff;
+  padding: 16px;
+  border-radius: 4px;
+  border: 1px solid #e1dfdd;
+  margin-bottom: 16px;
+}
+
+.side-box button {
+  background: #0078d4;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.side-box button:hover {
+  background: #106ebe;
+}
+
+.side-box button:not(:first-child) {
+  background: transparent;
+  color: #323130;
+  border: 1px solid #8a8886;
+}
+
+.side-box button:not(:first-child):hover {
+  background: #f3f2f1;
+}
+
+.leaves-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.leave-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #e1dfdd;
+}
+
+.leave-item:last-child {
+  border-bottom: none;
+}
+
+.leave-reason {
+  display: block;
+  color: #605e5c;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.remove-btn {
+  background: transparent;
+  border: none;
+  color: #a4262c;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 2px;
+  transition: background-color 0.1s ease;
+}
+
+.remove-btn:hover {
+  background: #fdf3f4;
+}
+
+.add-leave input {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #8a8886;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.add-leave input:focus {
+  outline: none;
+  border-color: #0078d4;
+  box-shadow: 0 0 0 1px #0078d4;
+}
+
+.add-leave label {
+  color: #323130;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.side-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.side-actions button {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+button { 
+  cursor: pointer; 
+  font-family: inherit;
+}
