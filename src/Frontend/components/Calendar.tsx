@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './Calendar.css';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { loginRequest } from '../../authConfig';
@@ -132,7 +132,7 @@ export default function Calendar() {
   const removeLeave = (date: string) => {
     setLeaves((prev) => prev.filter((p) => p.date !== date));
   };
-/*     //API INTEGRATION for CALENDAR MS TEAMS
+     //API INTEGRATION for CALENDAR MS TEAMS
   // MSAL / Graph integration (unchanged) - events will be mapped to local days above
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -178,7 +178,7 @@ export default function Calendar() {
     fetchEvents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, instance, accounts]);
-*/
+
   // Automatic local-midnight refresh effect
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -219,6 +219,7 @@ export default function Calendar() {
             <div style={{ width: 12 }} />
             <div className="calendar-title">{monthYearLabel}</div>
           </div>
+          {/*
           <div className="nav-right">
             {isAuthenticated ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -229,6 +230,8 @@ export default function Calendar() {
               <button onClick={() => instance.loginPopup(loginRequest)}>Sign in</button>
             )}
           </div>
+          */}
+
         </div>
 
         <div className="calendar-grid" role="grid" aria-label="Calendar">

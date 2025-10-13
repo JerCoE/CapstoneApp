@@ -8,9 +8,9 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState("");
 
-  const handleLogin = (email: string, password: string) => {
-    // Simple mock authentication - accepts any email/password
-    setUserEmail(email);
+  const handleLogin = (emailOrId: string | undefined, _password?: string) => {
+    // Called after successful external auth; emailOrId may be email or id
+    if (emailOrId) setUserEmail(emailOrId);
     setIsLoggedIn(true);
   };
 

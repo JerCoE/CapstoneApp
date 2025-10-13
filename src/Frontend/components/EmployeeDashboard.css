@@ -13,6 +13,13 @@
 	flex-direction: column;
 	justify-content: space-between;
 	padding: 20px 12px;
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	height: 100vh;
+	z-index: 30;
+	box-shadow: 2px 0 8px rgba(0,0,0,0.08);
 }
 
 .side-nav .logo{
@@ -62,6 +69,8 @@
 	flex: 1;
 	padding: 28px;
 	background: #f6f8fa;
+	margin-left: 220px; /* leave space for fixed sidebar */
+	min-height: 100vh;
 }
 
 .cards-grid{
@@ -123,8 +132,17 @@
 
 @media (max-width: 720px){
 	.employee-dashboard{flex-direction: column}
-	.side-nav{width:100%; flex-direction:row; align-items:center; gap:12px}
+	.side-nav{
+		position: static;
+		width: 100%;
+		height: auto;
+		flex-direction: row;
+		align-items: center;
+		gap: 12px;
+		padding: 12px;
+	}
 	.side-nav nav{flex-direction:row}
 	.nav-btn{padding:8px}
+	.dashboard-main{margin-left:0;padding-top:12px}
 }
 

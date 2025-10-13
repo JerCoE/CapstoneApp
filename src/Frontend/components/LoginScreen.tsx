@@ -1,10 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './LoginScreen.css';
 import { useMsal } from '@azure/msal-react';
 import { loginRequest } from '../../authConfig';
 
-const LoginScreen: React.FC = () => {
+type LoginScreenProps = {
+  onLogin?: (email?: string) => void;
+};
+
+const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   const { instance, accounts } = useMsal();
+  const [processing, setProcessing] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleLogin = async () => {
     try {
@@ -48,7 +54,7 @@ const LoginScreen: React.FC = () => {
       const profile = await profileRes.json();
       console.log('✅ Microsoft Graph profile fetched:', profile);
 
-      // Step 4: Send profile data to Supabase Edge Function
+  // Step 4: Send profile data to Supabase Edge Function
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
       const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
       const functionUrl = `${supabaseUrl}/functions/v1/microsoft-sync`;
@@ -83,35 +89,51 @@ const LoginScreen: React.FC = () => {
         const result = await backendRes.json();
         console.log('✅ Profile synced to Supabase:', result);
       }
+
+      // show confirmation and redirect to dashboard (via parent) after a short delay
+      setProcessing(false);
+      setShowConfirm(true);
+      setTimeout(() => {
+        if (onLogin) onLogin(profile.mail ?? profile.userPrincipalName ?? profile.id);
+      }, 700);
     } catch (err) {
+      setProcessing(false);
       console.error('❌ Login failed', err);
     }
   };
 
   return (
+   <div style={{ backgroundColor: 'white', height: '100vh', margin: 0, padding: 0 }}>
     <div className="Pausepoint">
       <span className="pausepoint-text">PausePoint</span>
       <div className="BackgroundLogo">
         <div className="BGtext">
           <div className="login-container">
             <h2 style={{ textAlign: 'center', fontWeight: '600', color: '#113372' }}>Login</h2>
-            {accounts.length > 0 ? (
+            {showConfirm && (
+              <div style={{ textAlign: 'center', color: '#0b3b66' }}>
+                Login successful — redirecting...
+              </div>
+            )}
+           {accounts.length > 0 ? (
               <p style={{ textAlign: 'center', color: '#113372' }}>
-                Welcome, {accounts[0].username}
-              </p>
+               {/* Welcome, {accounts[0].username} */}
+              </p> 
             ) : (
               <p style={{ textAlign: 'center', color: '#666' }}>
                 Sign in with your Microsoft account
               </p>
             )}
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-              <button onClick={handleLogin} type="button">
-                Sign in with Microsoft
+              <button onClick={() => { setProcessing(true); handleLogin(); }} type="button" disabled={processing}>
+                {processing ? 'Signing in...' : 'Sign in with Microsoft'}
               </button>
             </div>
+
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

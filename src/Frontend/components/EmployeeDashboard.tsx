@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import './EmployeeDashboard.css';
+import Calendar from './Calendar';
+import ActivityLog from './ActivityLog';
+import { useMsal } from '@azure/msal-react';
 
-type NavKey = 'main' | 'leave' | 'calendar';
+type NavKey = 'main' | 'leave' | 'calendar' | 'activity';
 
 type EmployeeDashboardProps = {
 	onLogout?: () => void;
@@ -10,17 +13,20 @@ type EmployeeDashboardProps = {
 const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ onLogout }) => {
 	const [active, setActive] = useState<NavKey>('main');
 
+	const { accounts } = useMsal();
+	
 	// sample data — replace with real data when available
 	const availableLeaves = 12;
 	const upcomingLeaves = [
 		{ id: 1, name: 'Vacation', from: '2025-11-03', to: '2025-11-07' },
-		{ id: 2, name: 'Medical', from: '2025-12-15', to: '2025-12-16' },
+		{ id: 2, name: 'Sick', from: '2025-12-15', to: '2025-12-16' },
 	];
 
 	return (
 		<div className="employee-dashboard">
 			<aside className="side-nav" aria-label="Primary">
-				<div className="logo">ERNI</div>
+				<div className="logo">Welcome, {accounts?.[0]?.name ?? accounts?.[0]?.username}</div>
+
 				<nav>
 					<button
 						className={active === 'main' ? 'nav-btn active' : 'nav-btn'}
@@ -40,12 +46,21 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ onLogout }) => {
 					>
 						Calendar
 					</button>
+					<button
+						className={active === 'activity' ? 'nav-btn active' : 'nav-btn'}
+						onClick={() => setActive('activity')}
+					>
+						Activity Log
+					</button>
 				</nav>
 
 				<div className="side-footer">
 					<button
 						className="nav-btn logout"
-						onClick={() => (onLogout ? onLogout() : console.log('logout'))}
+						onClick={async () => {
+							if (onLogout) onLogout();
+							
+						}}
 					>
 						Logout
 					</button>
@@ -91,9 +106,14 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ onLogout }) => {
 				)}
 
 				{active === 'calendar' && (
-					<section className="placeholder">
-						<h2>Calendar</h2>
-						<p>Calendar component will appear here.</p>
+					<section className="calendar-section">
+						<Calendar />
+					</section>
+				)}
+
+				{active === 'activity' && (
+					<section className="activity-section">
+						<ActivityLog />
 					</section>
 				)}
 			</main>

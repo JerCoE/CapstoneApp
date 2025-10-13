@@ -1,0 +1,25 @@
+/* Activity Log styles */
+.activity-root{
+	background: white;
+	border-radius: 8px;
+	padding: 18px;
+	box-shadow: 0 6px 12px rgba(0,0,0,0.04);
+}
+.activity-list{
+	margin-top: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+.activity-item{
+	padding: 10px;
+	border-radius: 6px;
+	background: #fbfcfd;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border: 1px solid #eef2f5;
+}
+.activity-text{font-weight:600}
+.activity-time{color:#7b7b7b;font-size:12px}
+
