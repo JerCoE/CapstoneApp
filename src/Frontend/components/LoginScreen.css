@@ -1,5 +1,5 @@
 .BackgroundLogo {
-  background-image: url('/ERNI logo.png');
+    background-image: url('../assets/ERNI logo.png');
   background-size: 600px;
   background-position: 700px 50px;
   background-repeat: no-repeat;
@@ -11,7 +11,7 @@
 
 
 .Pausepoint {
-    background-image: url('/ERNI logo.png');
+    background-image: url('../assets/ERNI logo.png');
     background-position: 30px 175px;
     background-repeat: no-repeat;
     background-size: 75px;
@@ -33,7 +33,7 @@
     pointer-events: none;
 }
 .BGtext{
-    background-image: url('/ERNI text.png');
+    background-image: url('../assets/ERNI text.png');
     text-align: center;
     background-size: 300px;
     background-position: 800px 700px;

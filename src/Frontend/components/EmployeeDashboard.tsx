@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './EmployeeDashboard.css';
+import ERNILogo from '/src/Frontend/assets/ERNI_logo_color.png';
 import Calendar from './Calendar';
 import ActivityLog from './ActivityLog';
 import { useMsal } from '@azure/msal-react';
@@ -25,7 +26,10 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ onLogout }) => {
 	return (
 		<div className="employee-dashboard">
 			<aside className="side-nav" aria-label="Primary">
-				<div className="logo">Welcome, {accounts?.[0]?.name ?? accounts?.[0]?.username}</div>
+				<div className="logo">
+					<img src={ERNILogo} alt="ERNI" className="erni-logo" />
+					<div className="welcome-text">Hello, {accounts?.[0]?.name ?? accounts?.[0]?.username}</div>
+				</div>
 
 				<nav>
 					<button
