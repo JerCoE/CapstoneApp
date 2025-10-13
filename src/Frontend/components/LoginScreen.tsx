@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './LoginScreen.css';
 import { useMsal } from '@azure/msal-react';
 import { loginRequest } from '../../authConfig';
+
 
 type LoginScreenProps = {
   onLogin?: (email?: string) => void;
@@ -11,6 +12,15 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   const { instance, accounts } = useMsal();
   const [processing, setProcessing] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  // Toggle a body class while this component is mounted so background styles
+  // live in CSS (avoids assigning numeric values to style properties)
+  useEffect(() => {
+    document.body.classList.add('login-bg');
+    return () => {
+      document.body.classList.remove('login-bg');
+    };
+  }, []);
 
   const handleLogin = async () => {
     try {
@@ -103,7 +113,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   };
 
   return (
-   <div style={{ backgroundColor: 'white', height: '100vh', margin: 0, padding: 0 }}>
+   <div>
     <div className="Pausepoint">
       <span className="pausepoint-text">PausePoint</span>
       <div className="BackgroundLogo">

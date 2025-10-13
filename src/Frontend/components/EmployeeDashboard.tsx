@@ -28,7 +28,7 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ onLogout }) => {
 			<aside className="side-nav" aria-label="Primary">
 				<div className="logo">
 					<img src={ERNILogo} alt="ERNI" className="erni-logo" />
-					<div className="welcome-text">Hello, {accounts?.[0]?.name ?? accounts?.[0]?.username}</div>
+					<div className="welcome-text">Hello, {accounts?.[0]?.username ?? accounts?.[0]?.username}</div>
 				</div>
 
 				<nav>
