@@ -1,26 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './LeaveRequests.css';
 import { useMsal } from '@azure/msal-react';
-
-type LeaveType = 'Vacation' | 'Sick' | 'Personal' | 'Unpaid';
-
-type SavedLeaveRequest = {
-  id: string;
-  user?: string;
-  type: LeaveType;
-  from: string; // ISO date
-  to: string;   // ISO date
-  reason: string;
-  days: number;
-  submittedAt: string; // ISO datetime
-};
+import RequestForm, { type RequestFormHandle } from './RequestForm.tsx';
+import { type SavedLeaveRequest } from './types';
 
 const STORAGE_KEY = 'capstone_leave_requests_v1';
 
 function calculateInclusiveDays(fromIso: string, toIso: string) {
   const from = new Date(fromIso);
   const to = new Date(toIso);
-  // clear time portion for safety
   from.setHours(0, 0, 0, 0);
   to.setHours(0, 0, 0, 0);
   const msPerDay = 24 * 60 * 60 * 1000;
@@ -28,21 +16,60 @@ function calculateInclusiveDays(fromIso: string, toIso: string) {
   return diff > 0 ? diff : 0;
 }
 
+const DEMO_ROWS: SavedLeaveRequest[] = [
+  {
+    id: 'demo-1',
+    user: 'Jane Doe',
+    type: 'Vacation',
+    from: '2025-10-25',
+    to: '2025-10-30',
+    reason: 'Family trip',
+    days: calculateInclusiveDays('2025-10-25', '2025-10-30'),
+    submittedAt: new Date().toISOString(),
+  },
+  {
+    id: 'demo-2',
+    user: 'Jane Doe',
+    type: 'Vacation',
+    from: '2025-10-25',
+    to: '2025-10-30',
+    reason: 'Family trip',
+    days: calculateInclusiveDays('2025-10-25', '2025-10-30'),
+    submittedAt: new Date().toISOString(),
+  },
+  {
+    id: 'demo-3',
+    user: 'Jane Doe',
+    type: 'Holiday',
+    from: '2025-10-25',
+    to: '2025-10-30',
+    reason: 'Holiday',
+    days: calculateInclusiveDays('2025-10-25', '2025-10-30'),
+    submittedAt: new Date().toISOString(),
+  },
+  {
+    id: 'demo-4',
+    user: 'Jane Doe',
+    type: 'Maternity',
+    from: '2025-10-25',
+    to: '2025-10-30',
+    reason: 'Maternity leave',
+    days: calculateInclusiveDays('2025-10-25', '2025-10-30'),
+    submittedAt: new Date().toISOString(),
+  },
+];
+
 export default function LeaveRequests() {
   const { accounts } = useMsal();
   const username = accounts?.[0]?.username ?? accounts?.[0]?.name ?? 'Me';
 
-  const [type, setType] = useState<LeaveType>('Vacation');
-  const [from, setFrom] = useState<string>('');
-  const [to, setTo] = useState<string>('');
-  const [reason, setReason] = useState<string>('');
-  const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
   const [saved, setSaved] = useState<SavedLeaveRequest[]>([]);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [demoRows, setDemoRows] = useState<SavedLeaveRequest[]>(DEMO_ROWS);
+  const [showForm, setShowForm] = useState<boolean>(false);
+
+  const requestFormRef = useRef<RequestFormHandle | null>(null);
 
   useEffect(() => {
-    // load saved requests from localStorage
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) setSaved(JSON.parse(raw));
@@ -51,164 +78,157 @@ export default function LeaveRequests() {
     }
   }, []);
 
-  function validate() {
-    const e: Record<string, string> = {};
-    if (!from) e.from = 'Start date is required';
-    if (!to) e.to = 'End date is required';
-    if (from && to) {
-      const fromDate = new Date(from);
-      const toDate = new Date(to);
-      if (toDate < fromDate) e.to = 'End date cannot be before start date';
-      const days = calculateInclusiveDays(from, to);
-      if (days <= 0) e.to = 'Selected date range must include at least 1 day';
+  // when the form becomes visible, ask the child to scroll/focus itself
+  useEffect(() => {
+    if (showForm) {
+      // give React a tick to mount the child, then call scrollTo
+      // RequestForm exposes scrollTo() via ref
+      setTimeout(() => {
+        requestFormRef.current?.scrollTo();
+      }, 50);
     }
-    if (!reason || reason.trim().length < 5) e.reason = 'Please provide a reason (min 5 chars)';
-    setErrors(e);
-    return Object.keys(e).length === 0;
+  }, [showForm]);
+
+  function handleSavedUpdated(newSaved: SavedLeaveRequest[]) {
+    setSaved(newSaved);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setMessage(null);
+  function handleEdit(id: string) {
+    const all = saved.length ? saved : demoRows;
+    const item = all.find((s) => s.id === id);
+    if (!item) return;
+    // ensure form is visible, then load the item
+    setShowForm(true);
+    // wait a tick for the child to mount, then load
+    setTimeout(() => {
+      requestFormRef.current?.loadRequest(item);
+    }, 60);
+  }
 
-    if (!validate()) {
-      setMessage('Please fix form errors and try again.');
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      const days = calculateInclusiveDays(from, to);
-      const req: SavedLeaveRequest = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        user: username,
-        type,
-        from,
-        to,
-        reason: reason.trim(),
-        days,
-        submittedAt: new Date().toISOString(),
-      };
-
-      const updated = [req, ...saved];
+  function handleCancel(id: string) {
+    if (!confirm('Cancel this leave request? This will remove it from saved requests.')) return;
+    if (saved.find((s) => s.id === id)) {
+      const updated = saved.filter((s) => s.id !== id);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       setSaved(updated);
-
-      // In a real app you'd call your API / supabase here.
-      console.log('Leave request saved (local):', req);
-
-      setMessage(`Leave request submitted (${days} day${days === 1 ? '' : 's'}).`);
-      // reset form but keep the type
-      setFrom('');
-      setTo('');
-      setReason('');
-      setErrors({});
-    } catch (err) {
-      console.error(err);
-      setMessage('Failed to submit leave request.');
-    } finally {
-      setSubmitting(false);
+    } else {
+      const updatedDemo = demoRows.filter((s) => s.id !== id);
+      setDemoRows(updatedDemo);
     }
   }
 
-  function handleClearSaved() {
-    if (!confirm('Clear all saved leave requests from localStorage?')) return;
-    localStorage.removeItem(STORAGE_KEY);
-    setSaved([]);
-    setMessage('Saved requests cleared.');
-  }
+  const visibleRows = saved.length ? saved : demoRows;
+  const totalUsed = visibleRows.reduce((acc, s) => acc + (s.days || 0), 0);
+  const totalAvailable = 18;
+  const pending = visibleRows.length;
 
   return (
     <div className="leave-requests">
-      <h2>Leave Request</h2>
+      <header className="site-header">
+        <div className="title">Leave Request</div>
+      </header>
 
-      <form className="leave-form" onSubmit={handleSubmit} noValidate>
-        <div className="row">
-          <label>Employee</label>
-          <div className="field static">{username}</div>
-        </div>
+      <div className="content">
+        <div className="left-column">
+          <div className="track-box panel">
+            <div className="track-title">
+              <h3>Track your Request/s</h3>
+              <div className="subtitle">Edit or cancel your leave application</div>
+            </div>
 
-        <div className="row">
-          <label htmlFor="type">Type</label>
-          <select id="type" value={type} onChange={(ev) => setType(ev.target.value as LeaveType)}>
-            <option>Vacation</option>
-            <option>Sick</option>
-            <option>Personal</option>
-            <option>Unpaid</option>
-          </select>
-        </div>
+            <div className="track-table">
+              <div className="track-head">
+                <div className="col type-col">Type</div>
+                <div className="col date-col">Date</div>
+                <div className="col actions-col" />
+              </div>
 
-        <div className="row two-col">
-          <div>
-            <label htmlFor="from">From</label>
-            <input id="from" type="date" value={from} onChange={(ev) => setFrom(ev.target.value)} />
-            {errors.from && <div className="error">{errors.from}</div>}
+              <div className="track-rows">
+                {visibleRows.length === 0 ? (
+                  <div className="empty">No saved requests yet.</div>
+                ) : (
+                  visibleRows.map((s) => (
+                    <div key={s.id} className="track-row">
+                      <div className="col type-col">{s.type}</div>
+                      <div className="col date-col">{formatDateRange(s.from, s.to)}</div>
+                      <div className="col actions-col">
+                        <button className="pill update-pill" onClick={() => handleEdit(s.id)}>Update</button>
+                        <button className="pill cancel-pill" onClick={() => handleCancel(s.id)}>Cancel</button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="track-spacer" />
           </div>
-
-          <div>
-            <label htmlFor="to">To</label>
-            <input id="to" type="date" value={to} onChange={(ev) => setTo(ev.target.value)} />
-            {errors.to && <div className="error">{errors.to}</div>}
-          </div>
         </div>
 
-        <div className="row">
-          <label htmlFor="reason">Reason</label>
-          <textarea id="reason" rows={4} value={reason} onChange={(ev) => setReason(ev.target.value)} />
-          {errors.reason && <div className="error">{errors.reason}</div>}
-        </div>
+        <div className="split-divider" />
 
-        <div className="actions">
-          <button type="submit" className="primary" disabled={submitting}>
-            {submitting ? 'Submitting...' : 'Submit Request'}
-          </button>
-          <button
-            type="button"
-            className="secondary"
-            onClick={() => {
-              setFrom('');
-              setTo('');
-              setReason('');
-              setErrors({});
-              setMessage(null);
-            }}
-            disabled={submitting}
-          >
-            Reset
-          </button>
-        </div>
+        <aside className="right-column">
+          {/* Render the form only when showForm is true */}
+          {showForm && (
+  <RequestForm
+    ref={requestFormRef}
+    onSaved={handleSavedUpdated}
+    initialUsername={username}
+    onClose={() => setShowForm(false)} // <-- new
+  />
+)}
 
-        {message && <div className="message">{message}</div>}
-      </form>
-
-      <section className="saved-requests">
-        <div className="saved-header">
-          <h3>Saved requests (local)</h3>
-          <div>
-            <button className="small" onClick={handleClearSaved} disabled={saved.length === 0}>
-              Clear saved
+          <div className="sidebar-buttons">
+            <button
+              className="apply-btn"
+              onClick={() => {
+                if (!showForm) {
+                  setShowForm(true);
+                } else {
+                  // if already visible, just focus/scroll it
+                  requestFormRef.current?.scrollTo();
+                }
+              }}
+            >
+              + Apply Leave
             </button>
+            <button className="drafts-btn">Drafts</button>
           </div>
-        </div>
 
-        {saved.length === 0 ? (
-          <div className="empty">No saved requests yet.</div>
-        ) : (
-          <ul>
-            {saved.map((s) => (
-              <li key={s.id}>
-                <div className="meta">
-                  <strong>{s.type}</strong> — {s.from} → {s.to} ({s.days} day{s.days === 1 ? '' : 's'})
-                </div>
-                <div className="by">
-                  By {s.user ?? 'Unknown'} on {new Date(s.submittedAt).toLocaleString()}
-                </div>
-                <div className="reason">{s.reason}</div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+          <div className="sidebar-card stats-card">
+            <div className="card-title">Quick Stats</div>
+            <div className="card-body">
+              <div>Total leaves used: <strong>{totalUsed}</strong></div>
+              <div>Total available: <strong>{totalAvailable}</strong></div>
+              <div>Pending Request/s: <strong>{pending}</strong></div>
+            </div>
+          </div>
+
+          <div className="sidebar-card teams-card">
+            <div className="card-title">Team/s</div>
+            <div className="card-body">
+              <div className="team-pill">DE/DA Starbucks</div>
+              <div className="team-pill">DE/DA Starbucks</div>
+            </div>
+          </div>
+        </aside>
+      </div>
     </div>
   );
+}
+
+function formatDateRange(fromIso: string, toIso: string) {
+  try {
+    const from = new Date(fromIso);
+    const to = new Date(toIso);
+    const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+    const fromStr = from.toLocaleDateString(undefined, opts);
+    const toStr = to.toLocaleDateString(undefined, opts);
+    if (fromIso === toIso) {
+      return `${fromStr}, ${from.getFullYear()}`;
+    }
+    return `${fromStr} - ${toStr}, ${from.getFullYear()}`;
+  } catch {
+    return `${fromIso} → ${toIso}`;
+  }
 }

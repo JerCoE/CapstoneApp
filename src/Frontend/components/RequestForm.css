@@ -1,0 +1,129 @@
+/* FORM (now in right column) */
+/* make sure the form container can position the close button */
+.leave-form {
+  position: relative;
+}
+
+/* close button (top-right inside the form) */
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #fff;
+  border: 1px solid #d6e6f7;
+  color: #12385f;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  line-height: 1;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+}
+.close-btn:hover {
+  background: #f3f8ff;
+  transform: translateY(-1px);
+}
+
+.leave-form .row { margin-bottom: 10px; }
+.leave-form label { display:block; margin-bottom:6px; color:#23415a; font-weight:600; }
+.field.static { background:#fff; border:1px solid #d6dfe8; padding:8px 10px; border-radius:8px; }
+
+.leave-form select, .leave-form input[type="date"], .leave-form textarea {
+  width:100%; padding:8px 10px; border-radius:8px; border:1px solid #cfdfee; background:#fff;
+}
+
+/* Modal backdrop and dialog */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(16, 30, 44, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 24px;
+}
+
+.modal-dialog {
+  max-width: 420px;
+  width: 100%;
+  outline: none;
+}
+
+/* slightly tweak the form when used in a modal */
+.leave-form.modal-form {
+  margin: 0;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(8, 20, 40, 0.25);
+  background: #fff;
+  border: 1px solid #d6e6f7;
+  position: relative;
+}
+
+/* close button (top-right inside the modal form) */
+.leave-form.modal-form .close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #fff;
+  border: 1px solid #d6e6f7;
+  color: #12385f;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  line-height: 1;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+}
+.leave-form.modal-form .close-btn:hover {
+  background: #f3f8ff;
+  transform: translateY(-1px);
+}
+
+/* ensure mobile spacing */
+@media (max-width: 480px) {
+  .modal-dialog {
+    max-width: 95%;
+  }
+  .modal-backdrop {
+    padding: 12px;
+  }
+}
+
+.two-col { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+
+.form-actions { display:flex; gap:10px; align-items:center; margin-top:6px; }
+.primary {
+  background: linear-gradient(#2f6fb1, #123d66);
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.secondary {
+  background: #eaf3fb;
+  color: #12385f;
+  border: 1px solid #cfe3f6;
+  padding: 8px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.small.inline {
+  background: transparent; border: 1px dashed #c7d4e6; padding:6px 10px; border-radius:8px; color:#34546a;
+}
+.message {
+  margin-top:8px; background:#eef8ff; border:1px solid #cbe7ff; padding:8px 10px; border-radius:10px; color:#12385f;
+}

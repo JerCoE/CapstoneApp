@@ -282,7 +282,7 @@ export default function Calendar() {
             <label>Reason</label>
             <input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Vacation" />
             <div className="side-actions">
-              <button onClick={saveLeave} disabled={!selectedDate}>Save leave</button>
+              <button onClick={saveLeave} disabled={!selectedDate}>Apply leave</button>
               <button onClick={() => { if (selectedDate) removeLeave(selectedDate); }} disabled={!selectedDate}>Remove</button>
             </div>
           </div>
