@@ -4,6 +4,7 @@ import ERNILogo from '/src/Frontend/assets/ERNI_logo_color.png';
 import Calendar from './Calendar';
 import ActivityLog from './ActivityLog';
 import { useMsal } from '@azure/msal-react';
+import LeaveRequests from './LeaveRequests';
 
 type NavKey = 'main' | 'leave' | 'calendar' | 'activity';
 
@@ -103,10 +104,9 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ onLogout }) => {
 				)}
 
 				{active === 'leave' && (
-					<section className="placeholder">
-						<h2>Leave Request</h2>
-						<p>Leave request form will appear here.</p>
-					</section>
+  <section className="leave-section">
+    <LeaveRequests />
+  </section>
 				)}
 
 				{active === 'calendar' && (
