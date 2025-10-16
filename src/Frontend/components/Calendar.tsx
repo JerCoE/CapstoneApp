@@ -3,7 +3,7 @@ import './Calendar.css';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { loginRequest } from '../../authConfig';
 import RequestForm, { type RequestFormHandle } from './RequestForm.tsx';
-import { type SavedLeaveRequest } from './types';
+import ButtonRequest from './ButtonRequest.tsx';
 
 
 interface Leave {
@@ -292,31 +292,8 @@ useEffect(() => {
 
       <aside className="calendar-side">
         <h3>Details</h3>
-
-        <div className="side-box">
-       <div className="sidebar-buttons">
-<button
-  className="apply-btn"
-  onClick={() => {
-    if (!showForm) {
-      setShowForm(true);
-      // wait a tick so RequestForm mounts, then ask it to scroll/focus
-      setTimeout(() => {
-        requestFormRef.current?.scrollTo?.();
-      }, 40);
-    } else {
-      // if already visible, just focus/scroll it
-      requestFormRef.current?.scrollTo?.();
-    }
-  }}
->
-  + Apply Leave
-</button>
-           {/* <button className="drafts-btn">Drafts</button>*/}
-          </div>
-
-
-        </div>
+      
+        <ButtonRequest />
 
         <div className="side-box">
           <h4 style={{ marginTop: 0 }}>Leaves</h4>
