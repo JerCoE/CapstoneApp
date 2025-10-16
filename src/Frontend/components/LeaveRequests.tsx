@@ -165,8 +165,7 @@ export default function LeaveRequests() {
           </div>
         </div>
 
-        <div className="split-divider" />
-
+       
         <aside className="right-column">
           {/* Render the form only when showForm is true */}
           {showForm && (
@@ -192,7 +191,7 @@ export default function LeaveRequests() {
             >
               + Apply Leave
             </button>
-            <button className="drafts-btn">Drafts</button>
+          {/* <button className="drafts-btn">Drafts</button> */}
           </div>
 
           <div className="sidebar-card stats-card">

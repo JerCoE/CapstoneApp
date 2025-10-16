@@ -1,25 +1,214 @@
-/* Activity Log styles */
-.activity-root{
-	background: white;
-	border-radius: 8px;
-	padding: 18px;
-	box-shadow: 0 6px 12px rgba(0,0,0,0.04);
+/* Page header */
+.activity-page {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
-.activity-list{
-	margin-top: 12px;
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-}
-.activity-item{
-	padding: 10px;
-	border-radius: 6px;
-	background: #fbfcfd;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	border: 1px solid #eef2f5;
-}
-.activity-text{font-weight:600}
-.activity-time{color:#7b7b7b;font-size:12px}
 
+.page-header {
+  background: #123a78;
+  color: #fff;
+  padding: 12px 18px; /* reduced */
+  text-align: center;
+  border-bottom: 4px solid rgba(0,0,0,0.05);
+}
+
+.page-header h1 {
+  margin: 0;
+  font-weight: 600;
+  font-size: 22px; /* slightly smaller */
+}
+
+/* main content layout */
+.activity-content {
+  display: flex;
+  gap: 18px; /* reduced gap */
+  padding: 18px; /* reduced padding so content fits */
+  align-items: flex-start;
+}
+
+/* left card (main list) */
+.left-card {
+  flex: 1 1 auto;
+  background: #fff;
+  border-radius: 10px;
+  padding: 14px; /* reduced */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+  border: 1px solid #e6eef7; /* subtle blue border */
+  min-width: 0;
+}
+
+.card-head-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-head-row h3 {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+}
+
+.subtitle {
+  margin: 0;
+  color: #7b7b7b;
+  font-size: 12px;
+}
+
+/* search styling */
+.search-box input {
+  width: 180px; /* narrower */
+  padding: 8px 10px; /* reduced */
+  border-radius: 6px;
+  border: 2px dashed #84baf2;
+  outline: none;
+  font-size: 13px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.search-box input:focus {
+  border-style: solid;
+  box-shadow: 0 0 0 3px rgba(132, 186, 242, 0.12);
+}
+
+/* table */
+.table-wrap {
+  margin-top: 12px;
+  overflow: hidden; /* no horizontal scrollbar if we fit */
+  border-radius: 6px;
+  border: 1px solid #eef2f5;
+}
+
+.leave-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* fixed layout so columns obey widths */
+  font-size: 13px;
+}
+
+/* explicit column widths to keep table compact and fit on a page */
+.leave-table thead th {
+  text-align: left;
+  padding: 10px 12px;
+  background: #2e6aa0;
+  color: white;
+  font-weight: 600;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+/* column widths (percentages tuned to fit) */
+.leave-table thead th:nth-child(1) { width: 12%; } /* Leave Type */
+.leave-table thead th:nth-child(2) { width: 18%; } /* Name */
+.leave-table thead th:nth-child(3) { width: 12%; } /* Date From */
+.leave-table thead th:nth-child(4) { width: 12%; } /* Date To */
+.leave-table thead th:nth-child(5) { width: 14%; } /* Applied On */
+.leave-table thead th:nth-child(6) { width: 20%; } /* Approved by */
+.leave-table thead th:nth-child(7) { width: 12%; } /* Approved Date */
+
+/* body cells */
+.leave-table tbody td {
+  padding: 10px 7px;
+  color: #3b3b3b;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f4f6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* prevent wrap, keep single-line rows */
+}
+
+.leave-table tbody tr:nth-child(odd) td {
+  background: #fbfbfd;
+}
+
+.leave-table tbody tr:nth-child(even) td {
+  background: #fff;
+}
+
+.leave-table .type-cell {
+  font-weight: 600;
+  color: #1f3f63;
+}
+
+.leave-table .no-results td {
+  text-align: center;
+  padding: 18px;
+  color: #777;
+}
+
+/* right side controls */
+.right-sidebar {
+  width: 240px; /* smaller width so everything fits */
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: stretch;
+}
+
+.btn {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.apply-btn {
+  background: #2e6aa0;
+  color: white;
+  box-shadow: 0 6px 12px rgba(46,106,160,0.12);
+  font-size: 14px;
+  display: block;
+}
+
+.filter-panel {
+  background: transparent;
+  border-radius: 8px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #333;
+}
+
+.filter-panel label {
+  font-size: 12px;
+  color: #6b6b6b;
+  margin-bottom: 2px;
+}
+
+.filter-panel select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #e6eef7;
+  background: white;
+  font-size: 13px;
+}
+
+/* responsive: at smaller widths stack the sidebar under the table */
+@media (max-width: 1100px) {
+  .activity-content { gap: 12px; padding: 12px; }
+  .right-sidebar { width: 220px; }
+  .search-box input { width: 150px; }
+}
+
+/* narrow / mobile: stack and allow scroll */
+@media (max-width: 900px) {
+  .activity-content {
+    flex-direction: column;
+    padding: 12px;
+  }
+  .right-sidebar {
+    width: 100%;
+    flex-direction: row;
+    gap: 8px;
+    justify-content: space-between;
+  }
+  .leave-table {
+    table-layout: auto; /* allow columns to wrap on very narrow screens */
+    font-size: 12px;
+  }
+  .leave-table tbody td { white-space: normal; }
+}

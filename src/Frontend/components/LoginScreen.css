@@ -72,23 +72,26 @@ body.login-bg {
   background-image: url('../assets/ERNI text.png');
   text-align: center;
   background-size: 400px;
-  background-position: 750px 650px;
+  background-position: 750px 700px;
   background-repeat: no-repeat;
-  position: relative;
+  position: absolute;
   height: 100vh;
   width: 100vw;
 }
 
 /* Ensure login container sits above animated background */
 .login-container {
-  position: relative;
-  z-index: 50; /* ensure above body background */
+ position: absolute;
+  top: 50%;
+  left: 10%;
+  transform: translate(-50%,-50%); /* exact center */
+  z-index: 50;
+  max-width: 460px;
+  width: calc(100% - 48px);         /* leave small gutters on narrow screens */
+  padding: 28px;
+  border-radius: 10px;
   background: rgba(255,255,255,0.60); /* translucent card to improve contrast */
   backdrop-filter: blur(4px);          /* subtle glass effect (optional) */
-  border-radius: 10px;
-  padding: 28px;
-  max-width: 460px;
-  margin: 300px -50px;
   box-shadow: 0 8px 30px rgba(12, 20, 30, 0.12);
   text-align: left;
 }

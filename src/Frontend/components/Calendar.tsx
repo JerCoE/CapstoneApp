@@ -1,7 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import './Calendar.css';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { loginRequest } from '../../authConfig';
+import RequestForm, { type RequestFormHandle } from './RequestForm.tsx';
+import { type SavedLeaveRequest } from './types';
+
 
 interface Leave {
   date: string; // ISO YYYY-MM-DD (local PC timezone)
@@ -208,6 +211,18 @@ export default function Calendar() {
   }
   while (cells.length % 7 !== 0) cells.push({});
 
+  const [showForm, setShowForm] = useState(false);
+  const requestFormRef = useRef<RequestFormHandle | null>(null);
+  // When showForm becomes true, the RequestForm will mount;
+// call its scrollTo/focus method (if exposed) after mount.
+useEffect(() => {
+  if (showForm) {
+    // call the method exposed by the RequestForm handle
+    // (use optional chaining in case the method or ref is missing)
+    requestFormRef.current?.scrollTo?.();
+  }
+}, [showForm]);
+
   return (
     <div className="calendar-root">
       <div className="calendar-main">
@@ -263,29 +278,44 @@ export default function Calendar() {
                   <div style={{ marginTop: 6, fontSize: 12, color: '#605e5c' }}>
                     {dayEvents.slice(0, 2).map((ev, i) => <div key={i}>{ev.subject}</div>)}
                   </div>
+                  
                 )}
+
               </div>
             );
           })}
         </div>
+          {showForm && (<RequestForm ref={requestFormRef}
+              onClose={() => setShowForm(false)} />
+                )}
       </div>
 
       <aside className="calendar-side">
         <h3>Details</h3>
 
         <div className="side-box">
-          <div style={{ marginBottom: 8 }}>
-            <strong>Selected:</strong> <span style={{ color: '#605e5c' }}>{selectedDate ?? 'None'}</span>
+       <div className="sidebar-buttons">
+<button
+  className="apply-btn"
+  onClick={() => {
+    if (!showForm) {
+      setShowForm(true);
+      // wait a tick so RequestForm mounts, then ask it to scroll/focus
+      setTimeout(() => {
+        requestFormRef.current?.scrollTo?.();
+      }, 40);
+    } else {
+      // if already visible, just focus/scroll it
+      requestFormRef.current?.scrollTo?.();
+    }
+  }}
+>
+  + Apply Leave
+</button>
+           {/* <button className="drafts-btn">Drafts</button>*/}
           </div>
 
-          <div className="add-leave">
-            <label>Reason</label>
-            <input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Vacation" />
-            <div className="side-actions">
-              <button onClick={saveLeave} disabled={!selectedDate}>Apply leave</button>
-              <button onClick={() => { if (selectedDate) removeLeave(selectedDate); }} disabled={!selectedDate}>Remove</button>
-            </div>
-          </div>
+
         </div>
 
         <div className="side-box">

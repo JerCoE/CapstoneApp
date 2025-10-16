@@ -34,8 +34,21 @@
 .field.static { background:#fff; border:1px solid #d6dfe8; padding:8px 10px; border-radius:8px; }
 
 .leave-form select, .leave-form input[type="date"], .leave-form textarea {
-  width:100%; padding:8px 10px; border-radius:8px; border:1px solid #cfdfee; background:#fff;
+  width:100%;
+  padding:8px 2px;
+  border-radius:8px;
+  border:1px solid #cfdfee;
+  background:#fff;
 }
+
+
+/* prevent manual resize of textareas; keep content scrollable */
+.leave-form textarea {
+  resize: none;       /* disables drag-to-resize */
+  overflow: auto;     /* show scrollbar when needed */
+  min-height: 100px;  /* optional: give the reason box a sensible initial height */
+}
+
 
 /* Modal backdrop and dialog */
 .modal-backdrop {
@@ -69,11 +82,11 @@
 /* close button (top-right inside the modal form) */
 .leave-form.modal-form .close-btn {
   position: absolute;
-  top: 10px;
+  top: -25px;
   right: 10px;
   background: #fff;
-  border: 1px solid #d6e6f7;
-  color: #12385f;
+  border: 1px solid #2303d9;
+  color: #000000;
   padding: 6px 8px;
   border-radius: 8px;
   cursor: pointer;
@@ -117,7 +130,7 @@
   background: #eaf3fb;
   color: #12385f;
   border: 1px solid #cfe3f6;
-  padding: 8px 14px;
+  padding: px 14px;
   border-radius: 12px;
   cursor: pointer;
 }
@@ -125,5 +138,10 @@
   background: transparent; border: 1px dashed #c7d4e6; padding:6px 10px; border-radius:8px; color:#34546a;
 }
 .message {
-  margin-top:8px; background:#eef8ff; border:1px solid #cbe7ff; padding:8px 10px; border-radius:10px; color:#12385f;
+  margin-top:8px;
+  background:#eef8ff;
+  border:1px solid #cbe7ff;
+  padding:8px 10px;
+  border-radius:10px;
+ color:#12385f;
 }
