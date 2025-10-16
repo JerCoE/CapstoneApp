@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import './LeaveRequests.css';
+import './styles/LeaveRequests.css';
 import { useMsal } from '@azure/msal-react';
 import RequestForm, { type RequestFormHandle } from './RequestForm.tsx';
 import { type SavedLeaveRequest } from './types';

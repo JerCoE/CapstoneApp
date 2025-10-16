@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import './LoginScreen.css';
+import './styles/LoginScreen.css';
+
+import React, { useEffect, useState } from 'react';
+
 import { supabase } from '../lib/supabaseClient';
 
 type LoginScreenProps = {

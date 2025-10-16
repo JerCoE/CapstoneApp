@@ -1,7 +1,9 @@
+import './styles/Calendar.css';
+
 import { useEffect, useMemo, useState } from 'react';
-import './Calendar.css';
-import { supabase } from '../lib/supabaseClient';
+
 import ButtonRequest from './ButtonRequest.tsx';
+import { supabase } from '../lib/supabaseClient';
 
 interface Leave {
   date: string; // ISO YYYY-MM-DD (local)
@@ -178,8 +180,8 @@ export default function Calendar() {
   const daysInMonth = new Date(currentLocal.getFullYear(), currentLocal.getMonth() + 1, 0).getDate();
   const dateFor = (day: number) => {
     const y = currentLocal.getFullYear();
-    const m = String(currentLocal.getMonth() + 1).padStart(2, '0');
-    const d = String(day).padStart(2, '0');
+    const m = String(currentLocal.getMonth() + 1).padStart(2, "0");
+    const d = String(day).padStart(2, "0");
     return `${y}-${m}-${d}`;
   };
   const todayIso = isoDateLocal(new Date());
@@ -222,9 +224,9 @@ export default function Calendar() {
     if (!selectedDate) return;
     setLeaves((prev) => {
       const others = prev.filter((p) => p.date !== selectedDate);
-      return [...others, { date: selectedDate, reason: reason || 'Leave', source: 'user' }];
+      return [...others, { date: selectedDate, reason: reason || "Leave", source: "user" }];
     });
-    setReason('');
+    setReason("");
   };
   const removeLeave = (date: string) => setLeaves((prev) => prev.filter((p) => p.date !== date));
 
@@ -235,7 +237,7 @@ export default function Calendar() {
     // Avoid auto-redirecting during initial load
     if (sessionLoading) return;
     if (!providerToken) {
-      console.log('No provider token for current session — requesting Calendars scope...');
+      console.log("No provider token for current session — requesting Calendars scope...");
       ensureCalendarsScope(); // this will redirect user to consent screen
     }
   }, [sessionLoading, providerToken]);
@@ -245,18 +247,23 @@ export default function Calendar() {
       <div className="calendar-main">
         <div className="calendar-nav">
           <div className="nav-left">
-            <button onClick={prevMonth} aria-label="Previous month">‹</button>
+            <button onClick={prevMonth} aria-label="Previous month">
+              ‹
+            </button>
             <button onClick={goToday}>Today</button>
-            <button onClick={nextMonth} aria-label="Next month">›</button>
+            <button onClick={nextMonth} aria-label="Next month">
+              ›
+            </button>
             <div style={{ width: 12 }} />
             <div className="calendar-title">{monthYearLabel}</div>
           </div>
-
         </div>
 
         <div className="calendar-grid" role="grid" aria-label="Calendar">
           {weekdays.map((w) => (
-            <div key={w} className="calendar-weekday">{w}</div>
+            <div key={w} className="calendar-weekday">
+              {w}
+            </div>
           ))}
 
           {cells.map((cell, idx) => {
@@ -268,29 +275,28 @@ export default function Calendar() {
             const dayEvents = eventsByDate.get(iso) ?? [];
 
             const classes = [
-              'calendar-cell',
-              'day',
-              isToday ? 'today' : '',
-              isSelected ? 'selected' : '',
-              hasLeave ? 'leave' : '',
-            ].filter(Boolean).join(' ');
+              "calendar-cell",
+              "day",
+              isToday ? "today" : "",
+              isSelected ? "selected" : "",
+              hasLeave ? "leave" : "",
+            ]
+              .filter(Boolean)
+              .join(" ");
 
             return (
               <div key={idx} className={classes} onClick={() => onDayClick(cell.day!)}>
                 <div className="cell-number">{cell.day}</div>
                 {hasLeave && <div className="leave-marker" title="Leave/event" />}
                 {dayEvents.length > 0 && (
-                  <div style={{ marginTop: 6, fontSize: 12, color: '#605e5c' }}>
+                  <div style={{ marginTop: 6, fontSize: 12, color: "#605e5c" }}>
                     {dayEvents.slice(0, 2).map((ev, i) => <div key={i}>{ev.subject}</div>)}
                   </div>
-
                 )}
-
               </div>
             );
           })}
         </div>
-
       </div>
 
       <aside className="calendar-side">
@@ -301,41 +307,50 @@ export default function Calendar() {
         <div className="side-box">
           <h4 style={{ marginTop: 0 }}>Leaves</h4>
           <ul className="leaves-list">
-            {leaves.slice().sort((a,b) => a.date.localeCompare(b.date)).map(l => (
-              <li key={l.date} className="leave-item">
-                <div>
-                  <div style={{ fontWeight: 600 }}>{l.date}</div>
-                  <div className="leave-reason">{l.reason}</div>
-                  <div style={{ fontSize: 11, color: '#8a8886' }}>{l.source === 'graph' ? 'From MS Teams' : 'User'}</div>
-                </div>
-                <div>
-                  <button className="remove-btn" onClick={() => removeLeave(l.date)}>✕</button>
-                </div>
-              </li>
-            ))}
-            {leaves.length === 0 && <div style={{ color: '#8a8886' }}>No leaves</div>}
+            {leaves
+              .slice()
+              .sort((a, b) => a.date.localeCompare(b.date))
+              .map((l) => (
+                <li key={l.date} className="leave-item">
+                  <div>
+                    <div style={{ fontWeight: 600 }}>{l.date}</div>
+                    <div className="leave-reason">{l.reason}</div>
+                    <div style={{ fontSize: 11, color: "#8a8886" }}>{l.source === "graph" ? "From MS Teams" : "User"}</div>
+                  </div>
+                  <div>
+                    <button className="remove-btn" onClick={() => removeLeave(l.date)}>
+                      ✕
+                    </button>
+                  </div>
+                </li>
+              ))}
+            {leaves.length === 0 && <div style={{ color: "#8a8886" }}>No leaves</div>}
           </ul>
         </div>
 
         <div className="side-box">
           <h4 style={{ marginTop: 0 }}>Upcoming events (from Teams)</h4>
-          <ul style={{ padding: 0, margin: 0, listStyle: 'none' }}>
-            {events.slice().sort((a,b) => {
-              const aStart = a.start?.dateTime ?? a.start?.date ?? '';
-              const bStart = b.start?.dateTime ?? b.start?.date ?? '';
-              return aStart.localeCompare(bStart);
-            }).slice(0,10).map(ev => {
-              const startStr = ev.start?.dateTime ?? ev.start?.date ?? '';
-              const key = startStr || ev.id || Math.random().toString(36).slice(2,9);
-              const evDateIso = startStr ? isoDateLocal(new Date(startStr)) : '';
-              return (
-                <li key={key} style={{ padding: '8px 0', borderBottom: '1px solid #e1dfdd' }}>
-                  <div style={{ fontWeight: 600 }}>{ev.subject}</div>
-                  <div style={{ fontSize: 12, color: '#605e5c' }}>{evDateIso}</div>
-                </li>
-              );
-            })}
-            {events.length === 0 && <div style={{ color: '#8a8886' }}>No events loaded</div>}
+          <ul style={{ padding: 0, margin: 0, listStyle: "none" }}>
+            {events
+              .slice()
+              .sort((a, b) => {
+                const aStart = a.start?.dateTime ?? a.start?.date ?? "";
+                const bStart = b.start?.dateTime ?? b.start?.date ?? "";
+                return aStart.localeCompare(bStart);
+              })
+              .slice(0, 10)
+              .map((ev) => {
+                const startStr = ev.start?.dateTime ?? ev.start?.date ?? "";
+                const key = startStr || ev.id || Math.random().toString(36).slice(2, 9);
+                const evDateIso = startStr ? isoDateLocal(new Date(startStr)) : "";
+                return (
+                  <li key={key} style={{ padding: "8px 0", borderBottom: "1px solid #e1dfdd" }}>
+                    <div style={{ fontWeight: 600 }}>{ev.subject}</div>
+                    <div style={{ fontSize: 12, color: "#605e5c" }}>{evDateIso}</div>
+                  </li>
+                );
+              })}
+            {events.length === 0 && <div style={{ color: "#8a8886" }}>No events loaded</div>}
           </ul>
         </div>
       </aside>

@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+
+import Calendar from '../../components/Calendar';
 import Navbar from '../../components/nav/Navbar';
 import supabase from '../../lib/supabaseClient';
 import { useMsal } from '@azure/msal-react';
@@ -11,7 +13,8 @@ type Profile = {
 };
 
 export default function AdminDashboard() {
-  const { instance } = useMsal();
+  // include accounts for MSAL fallback
+  const { instance, accounts } = useMsal();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -24,14 +27,42 @@ export default function AdminDashboard() {
 
       try {
         // Try to get the currently authenticated Supabase user
-        // (works with Supabase JS v2)
         const { data: userData, error: userError } = await supabase.auth.getUser();
         if (userError) throw userError;
 
         const user = (userData as any)?.user;
 
         if (!user) {
-          // no supabase session found; still allow viewing a minimal dashboard
+          // No Supabase session found — attempt MSAL fallback (query profile by email)
+          const msalEmail = accounts?.[0]?.username ?? accounts?.[0]?.homeAccountId ?? null;
+          // accounts[0].username is typically the email; homeAccountId is fallback but may not be email
+          if (msalEmail) {
+            // attempt to find a profile row by email
+            const { data: profileByEmail, error: profErr } = await supabase
+              .from('profiles')
+              .select('id, email, display_name, roles')
+              .eq('email', msalEmail)
+              .limit(1)
+              .maybeSingle();
+
+            if (profErr) {
+              // if read is blocked by RLS/policies, treat as not found
+              console.warn('Profile lookup by email failed:', profErr);
+              if (mounted) {
+                setProfile(null);
+                setLoading(false);
+              }
+              return;
+            }
+
+            if (mounted) {
+              setProfile((profileByEmail as any) ?? null);
+              setLoading(false);
+            }
+            return;
+          }
+
+          // no supabase user and no msal email -> minimal view
           if (mounted) {
             setProfile(null);
             setLoading(false);
@@ -39,7 +70,7 @@ export default function AdminDashboard() {
           return;
         }
 
-        // Attempt to fetch the profile row using an auth_user_id foreign key
+        // Supabase session exists — fetch profile by auth_user_id (preferred)
         const { data, error: fetchError } = await supabase
           .from('profiles')
           .select('id, email, display_name, roles')
@@ -48,7 +79,7 @@ export default function AdminDashboard() {
           .maybeSingle();
 
         if (fetchError) {
-          // If the schema doesn't have auth_user_id, try matching by email
+          // If the schema doesn't have auth_user_id or the query failed, try email fallback
           const fallback = await supabase
             .from('profiles')
             .select('id, email, display_name, roles')
@@ -73,7 +104,7 @@ export default function AdminDashboard() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [accounts]); // re-run if MSAL accounts change
 
   const onLogout = async () => {
     try {
@@ -95,7 +126,8 @@ export default function AdminDashboard() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <Navbar onLogout={onLogout} userEmail={profile?.email} />
+      {/* pass isAdmin to Navbar so it can render admin links */}
+      <Navbar onLogout={onLogout} userEmail={profile?.email} isAdmin={isAdmin} />
 
       <main style={{ padding: '24px', flex: 1 }}>
         <h1>Administration</h1>
@@ -122,8 +154,13 @@ export default function AdminDashboard() {
                 <div>
                   <p>You are an <strong>admin</strong>. Admin navigation and controls will appear here.</p>
                   <div style={{ border: '1px dashed #ccc', padding: '12px', marginTop: '8px' }}>
-                    {/* Placeholder admin controls — empty for now */}
                     <em>Admin controls placeholder</em>
+                  </div>
+
+                  {/* Show the Calendar to admins */}
+                  <div style={{ marginTop: '20px' }}>
+                    <h2>Calendar</h2>
+                    <Calendar />
                   </div>
                 </div>
               ) : (

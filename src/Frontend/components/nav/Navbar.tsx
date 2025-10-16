@@ -1,14 +1,16 @@
+import './Navbar.css';
+
+import ERNILogo from '/src/Frontend/assets/ERNI_logo_color.png';
 import { NavLink } from 'react-router-dom';
 import { useMsal } from '@azure/msal-react';
-import './Navbar.css';
-import ERNILogo from '/src/Frontend/assets/ERNI_logo_color.png';
 
 type NavbarProps = {
   onLogout?: () => void;
   userEmail?: string;
+  isAdmin?: boolean;
 };
 
-export default function Navbar({ onLogout, userEmail }: NavbarProps) {
+export default function Navbar({ onLogout, userEmail, isAdmin }: NavbarProps) {
   const { accounts } = useMsal();
   const displayName = accounts?.[0]?.name ?? userEmail ?? '';
   const display = displayName ? `Welcome, ${displayName}` : 'Welcome';
@@ -33,6 +35,18 @@ export default function Navbar({ onLogout, userEmail }: NavbarProps) {
         <NavLink to="activity" className={({ isActive }) => (isActive ? 'nav-btn active' : 'nav-btn')}>
           Activity Log
         </NavLink>
+
+        {/* Admin links (shown only when isAdmin is true) */}
+        {isAdmin && (
+          <>
+            <NavLink to="/admin" className={({ isActive }) => (isActive ? 'nav-btn active' : 'nav-btn')}>
+              Admin
+            </NavLink>
+            <NavLink to="/admin/approvals" className={({ isActive }) => (isActive ? 'nav-btn active' : 'nav-btn')}>
+              Approvals
+            </NavLink>
+          </>
+        )}
       </nav>
 
       <div className="side-footer">
