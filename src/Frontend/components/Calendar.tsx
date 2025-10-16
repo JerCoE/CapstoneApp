@@ -41,6 +41,7 @@ export default function Calendar() {
   // auth/session state
   const [sessionLoading, setSessionLoading] = useState(true);
   const [providerToken, setProviderToken] = useState<string | null>(null);
+  const [checkedOnce, setCheckedOnce] = useState(false); // prevents immediate re-requests
 
   useEffect(() => {
     // initial session check + subscribe to changes
@@ -54,6 +55,7 @@ export default function Calendar() {
 
       const token = (session as any)?.provider_token ?? null;
       setProviderToken(token);
+      setCheckedOnce(true); // we've checked session once; do NOT trigger consent automatically
       setSessionLoading(false);
     };
 
@@ -70,26 +72,18 @@ export default function Calendar() {
     };
   }, []);
 
-  // Helper: request Graph Calendars scope if token missing
+  // Called only when user clicks or when Graph returns 401/403 and user confirms
   const ensureCalendarsScope = async () => {
-    // Request offline_access + Calendars.Read (and email/openid if you want them)
+    // Request only when necessary. Include offline_access so Supabase can obtain refresh tokens.
+    const scopes = 'openid profile email offline_access User.Read Calendars.Read';
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'azure',
-      options: {
-        scopes: 'openid email offline_access Calendars.Read User.Read',
-      },
+      options: { scopes },
     });
 
-    if (error) {
-      console.error('Failed to start OAuth request for Calendars scope', error);
-      return false;
-    }
-
-    // If supabase returns a URL, the browser will navigate
-    if (data?.url) {
-      window.location.href = data.url;
-    }
-    return true;
+    if ((data as any)?.url) window.location.href = (data as any).url;
+    if (error) console.error('Calendar consent failed:', error);
   };
 
   // Fetch events from Graph using provider token
@@ -233,6 +227,18 @@ export default function Calendar() {
     setReason('');
   };
   const removeLeave = (date: string) => setLeaves((prev) => prev.filter((p) => p.date !== date));
+
+  // If the user is signed in (session exists) but there's no provider token,
+  // initiate the OAuth flow to request Calendars.Read so we get provider_token.
+  // This only runs when providerToken becomes null after a session exists.
+  useEffect(() => {
+    // Avoid auto-redirecting during initial load
+    if (sessionLoading) return;
+    if (!providerToken) {
+      console.log('No provider token for current session — requesting Calendars scope...');
+      ensureCalendarsScope(); // this will redirect user to consent screen
+    }
+  }, [sessionLoading, providerToken]);
 
   return (
     <div className="calendar-root">

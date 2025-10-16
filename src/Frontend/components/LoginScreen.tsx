@@ -156,18 +156,22 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
-          scopes: 'email offline_access',
-          // leave redirectTo out for now so Supabase uses its callback
+          // Basic scopes so users sign in without consenting to Graph calendar unless needed.
+          scopes: 'openid profile email offline_access User.Read'
+          // Do NOT set prompt: 'consent'
+          // Optionally set redirectTo if you want a specific client-side callback:
+          // redirectTo: window.location.origin + '/auth/callback'
         },
       });
 
-      console.log('🔍 supabase.auth.signInWithOAuth ->', { data, error });
+      console.log('🔍 OAuth response:', { data, error });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
-      // If Supabase returned a URL, redirect the browser there explicitly:
+      // If Supabase returned a URL, redirect explicitly (keeps behavior consistent)
       if (data?.url) {
-        console.log('🔁 Redirecting browser to provider URL:', data.url);
         window.location.href = data.url;
       }
     } catch (err: any) {
