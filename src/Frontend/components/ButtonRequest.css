@@ -1,0 +1,17 @@
+
+.sidebar-buttons {
+     display:flex;
+    flex-direction:column;
+     gap:12px;
+      align-items:stretch; }
+
+.apply-btn, .drafts-btn {
+  background:#2f6fb1;
+color:#fff;
+ padding:10px 14px;
+  border-radius:12px;
+   border:none;
+    font-weight:700;
+  text-align:center;
+}
+.drafts-btn { opacity:0.95; }

@@ -1,7 +1,5 @@
 import './ActivityLog.css';
-import React, { useMemo, useState } from 'react';
-import RequestForm, { type RequestFormHandle } from './RequestForm.tsx';
-import { useRef, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import ButtonRequest from './ButtonRequest.tsx';
 
 
