@@ -1,14 +1,22 @@
-import React, { useState } from "react";
 import "./App.css";
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import LoginScreen from "./Frontend/components/LoginScreen";
-import DashboardLayout from "./Frontend/pages/Employee/EmployeeDashboard";
-import Calendar from "./Frontend/components/Calendar";
+
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+
 import ActivityLog from "./Frontend/components/ActivityLog";
-import LeaveRequests from "./Frontend/components/LeaveRequests";
 import AdminDashboard from "./Frontend/pages/Admin/AdminDashboard";
 import AuthCallback from './Frontend/pages/AuthCallback';
-import { supabase } from './Frontend/lib/supabaseClient'; // ✅ CORRECT PATH
+import Calendar from "./Frontend/components/Calendar";
+import DashboardLayout from "./Frontend/pages/Employee/EmployeeDashboard";
+import LeaveRequests from "./Frontend/components/LeaveRequests";
+import LeaveTracker from "./Frontend/pages/Admin/LeaveTracker";
+import LoginScreen from "./Frontend/components/LoginScreen";
+import Masterlist from "./Frontend/pages/Admin/Masterlist";
+import { supabase } from './Frontend/lib/supabaseClient';
+
+// Admin pages
+
+
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -86,7 +94,15 @@ export default function App() {
         <Route
           path="/admin/*"
           element={isLoggedIn ? <AdminDashboard /> : <Navigate to="/" />}
-        />
+        >
+          {/* nested admin routes render inside AdminDashboard via <Outlet /> */}
+          {/* Visiting /admin (index) will show LeaveTracker */}
+          <Route index element={<LeaveTracker />} />
+          <Route path="masterlist" element={<Masterlist />} />
+      
+          <Route path="activity" element={<ActivityLog />} />
+          <Route path="calendar" element={<Calendar />} />
+        </Route>
 
         <Route path="/auth/callback" element={<AuthCallback />} />
 
