@@ -1,24 +1,40 @@
 import React, { useState } from "react";
 import "./App.css";
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import LoginScreen from "./Frontend/components/LoginScreen";
 import DashboardLayout from "./Frontend/pages/Employee/EmployeeDashboard";
 import Calendar from "./Frontend/components/Calendar";
 import ActivityLog from "./Frontend/components/ActivityLog";
 import LeaveRequests from "./Frontend/components/LeaveRequests";
+import AdminDashboard from "./Frontend/pages/Admin/AdminDashboard";
+import AuthCallback from './Frontend/pages/AuthCallback';
+import { supabase } from './Frontend/lib/supabaseClient'; // ✅ CORRECT PATH
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState("");
+  const [role, setRole] = useState<string>('');
+  const navigate = useNavigate();
 
-  const handleLogin = (emailOrId?: string) => {
+  // New onLogin will receive (email, role)
+  const handleLogin = (emailOrId?: string, roleFromLogin?: string) => {
     if (emailOrId) setUserEmail(emailOrId);
+
+    const roleNormalized = roleFromLogin === 'admin' ? 'admin' : 'employee';
+    setRole(roleNormalized);
     setIsLoggedIn(true);
+    // navigate to the correct area
+    navigate(roleNormalized === 'admin' ? '/admin' : '/dashboard');
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Sign out from Supabase
+    await supabase.auth.signOut();
+    
     setIsLoggedIn(false);
     setUserEmail("");
+    setRole("");
+    navigate('/');
   };
 
   const DashboardHome: React.FC = () => (
@@ -54,7 +70,7 @@ export default function App() {
       <Routes>
         <Route
           path="/"
-          element={!isLoggedIn ? <LoginScreen onLogin={handleLogin} /> : <Navigate to="/dashboard" />}
+          element={!isLoggedIn ? <LoginScreen onLogin={handleLogin} /> : <Navigate to={role === 'admin' ? '/admin' : '/dashboard'} />}
         />
 
         <Route
@@ -67,7 +83,14 @@ export default function App() {
           <Route path="activity" element={<ActivityLog />} />
         </Route>
 
-        <Route path="*" element={<Navigate to={isLoggedIn ? "/dashboard" : "/"} />} />
+        <Route
+          path="/admin/*"
+          element={isLoggedIn ? <AdminDashboard /> : <Navigate to="/" />}
+        />
+
+        <Route path="/auth/callback" element={<AuthCallback />} />
+
+        <Route path="*" element={<Navigate to={isLoggedIn ? (role === 'admin' ? '/admin' : '/dashboard') : '/'} />} />
       </Routes>
     </div>
   );

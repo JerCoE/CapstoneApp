@@ -1,12 +1,10 @@
-import { useEffect, useMemo, useState} from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './Calendar.css';
-import { useMsal, useIsAuthenticated } from '@azure/msal-react';
-import { loginRequest } from '../../authConfig';
+import { supabase } from '../lib/supabaseClient';
 import ButtonRequest from './ButtonRequest.tsx';
 
-
 interface Leave {
-  date: string; // ISO YYYY-MM-DD (local PC timezone)
+  date: string; // ISO YYYY-MM-DD (local)
   reason?: string;
   source?: 'user' | 'graph';
 }
@@ -18,7 +16,6 @@ type GraphEvent = {
   end?: { dateTime?: string; date?: string; timeZone?: string };
 };
 
-// Format a Date as local YYYY-MM-DD
 const isoDateLocal = (d: Date) => {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -26,146 +23,117 @@ const isoDateLocal = (d: Date) => {
   return `${y}-${m}-${day}`;
 };
 
-// Create a Date at local midnight for given Y/M/D
 const dateAtLocalMidnight = (year: number, monthIndex: number, day: number) => {
   return new Date(year, monthIndex, day);
 };
 
 export default function Calendar() {
-  // Initialize calendar anchor to local midnight today so month matches local "today"
   const [current, setCurrent] = useState<Date>(() => {
     const now = new Date();
     return dateAtLocalMidnight(now.getFullYear(), now.getMonth(), now.getDate());
   });
-
-  // tick will be used to force re-render at local midnight
   const [tick, setTick] = useState(0);
-
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [reason, setReason] = useState<string>('');
   const [leaves, setLeaves] = useState<Leave[]>([]);
   const [events, setEvents] = useState<GraphEvent[]>([]);
 
-  const { instance, accounts } = useMsal();
-  const isAuthenticated = useIsAuthenticated();
+  // auth/session state
+  const [sessionLoading, setSessionLoading] = useState(true);
+  const [providerToken, setProviderToken] = useState<string | null>(null);
 
-  // currentLocal is local Date view of current anchor
-  const currentLocal = useMemo(() => new Date(current), [current]);
-  const monthYearLabel = `${currentLocal.toLocaleString(undefined, { month: 'long' })} ${currentLocal.getFullYear()}`;
-
-  // Monday-first weekday headers
-  const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-  // first day of month as local midnight
-  const firstOfMonthLocal = useMemo(
-    () => dateAtLocalMidnight(currentLocal.getFullYear(), currentLocal.getMonth(), 1),
-    [currentLocal]
-  );
-
-  // start offset for Monday-first (map JS 0=Sun..6=Sat to Monday-first)
-  const startDay = (firstOfMonthLocal.getDay() + 6) % 7;
-
-  // days in month using local Date
-  const daysInMonth = new Date(currentLocal.getFullYear(), currentLocal.getMonth() + 1, 0).getDate();
-
-  // deterministic date string for a day in the current month (local)
-  const dateFor = (day: number) => {
-    const y = currentLocal.getFullYear();
-    const m = String(currentLocal.getMonth() + 1).padStart(2, '0');
-    const d = String(day).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  };
-
-  // today in local timezone
-  const todayIso = isoDateLocal(new Date());
-
-  // maps for quick lookup
-  const leavesByDate = useMemo(() => {
-    const m = new Map<string, Leave>();
-    for (const l of leaves) m.set(l.date, l);
-    return m;
-  }, [leaves]);
-
-  const eventsByDate = useMemo(() => {
-    const m = new Map<string, GraphEvent[]>();
-    for (const ev of events) {
-      const startStr = ev.start?.dateTime ?? ev.start?.date;
-      if (!startStr) continue;
-      const evDate = new Date(startStr); // Date parses ISO/offset and yields local fields
-      const key = isoDateLocal(evDate);
-      if (!m.has(key)) m.set(key, []);
-      m.get(key)!.push(ev);
-    }
-    return m;
-  }, [events]);
-
-  const onDayClick = (day: number) => {
-    setSelectedDate(dateFor(day));
-  };
-
-  const prevMonth = () =>
-    setCurrent(() => {
-      const y = currentLocal.getFullYear();
-      const m = currentLocal.getMonth() - 1;
-      return dateAtLocalMidnight(y, m, 1);
-    });
-
-  const nextMonth = () =>
-    setCurrent(() => {
-      const y = currentLocal.getFullYear();
-      const m = currentLocal.getMonth() + 1;
-      return dateAtLocalMidnight(y, m, 1);
-    });
-
-  const goToday = () => {
-    const now = new Date();
-    setCurrent(dateAtLocalMidnight(now.getFullYear(), now.getMonth(), now.getDate()));
-  };
-
-  const saveLeave = () => {
-    if (!selectedDate) return;
-    setLeaves((prev) => {
-      const others = prev.filter((p) => p.date !== selectedDate);
-      return [...others, { date: selectedDate, reason: reason || 'Leave', source: 'user' }];
-    });
-    setReason('');
-  };
-
-  const removeLeave = (date: string) => {
-    setLeaves((prev) => prev.filter((p) => p.date !== date));
-  };
-     //API INTEGRATION for CALENDAR MS TEAMS
-  // MSAL / Graph integration (unchanged) - events will be mapped to local days above
   useEffect(() => {
-    if (!isAuthenticated) return;
+    // initial session check + subscribe to changes
+    let mounted = true;
+    const init = async () => {
+      setSessionLoading(true);
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!mounted) return;
+
+      const token = (session as any)?.provider_token ?? null;
+      setProviderToken(token);
+      setSessionLoading(false);
+    };
+
+    init();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      const token = (session as any)?.provider_token ?? null;
+      setProviderToken(token);
+    });
+
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  // Helper: request Graph Calendars scope if token missing
+  const ensureCalendarsScope = async () => {
+    // Request offline_access + Calendars.Read (and email/openid if you want them)
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'azure',
+      options: {
+        scopes: 'openid email offline_access Calendars.Read User.Read',
+      },
+    });
+
+    if (error) {
+      console.error('Failed to start OAuth request for Calendars scope', error);
+      return false;
+    }
+
+    // If supabase returns a URL, the browser will navigate
+    if (data?.url) {
+      window.location.href = data.url;
+    }
+    return true;
+  };
+
+  // Fetch events from Graph using provider token
+  useEffect(() => {
+    let cancelled = false;
 
     const fetchEvents = async () => {
+      if (!providerToken) {
+        console.log('No provider token available, skipping Graph fetch');
+        return;
+      }
+
       try {
-        if (!accounts || accounts.length === 0) return;
-        const account = accounts[0];
-        const resp = await instance.acquireTokenSilent({ ...loginRequest, account });
-        const token = resp.accessToken;
         const res = await fetch('https://graph.microsoft.com/v1.0/me/events?$select=subject,start,end', {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${providerToken}`,
             Accept: 'application/json',
           },
         });
+
         if (!res.ok) {
-          console.warn('Graph fetch failed', res.status, await res.text());
+          const text = await res.text();
+          console.warn('Graph fetch failed', res.status, text);
+
+          // If token doesn't have calendar permission or is invalid, initiate scope request
+          if (res.status === 401 || res.status === 403) {
+            console.warn('Token missing permissions or invalid. Requesting scopes...');
+            await ensureCalendarsScope();
+          }
           return;
         }
+
         const body = await res.json();
         const items: GraphEvent[] = body.value ?? [];
+        if (cancelled) return;
         setEvents(items);
 
-        // merge events into leaves (mark as graph-source) without duplicating
+        // merge events into leaves (mark as graph-source)
         setLeaves((prev) => {
           const existing = new Map(prev.map((p) => [p.date, p]));
           for (const ev of items) {
             const startStr = ev.start?.dateTime ?? ev.start?.date;
             if (!startStr) continue;
-            const key = isoDateLocal(new Date(startStr)); // map to local day
+            const key = isoDateLocal(new Date(startStr));
             if (!existing.has(key)) {
               existing.set(key, { date: key, reason: ev.subject ?? 'Event', source: 'graph' });
             }
@@ -173,13 +141,16 @@ export default function Calendar() {
           return Array.from(existing.values());
         });
       } catch (err) {
-        console.error('Failed to fetch events', err);
+        console.error('Failed to fetch events from Graph', err);
       }
     };
 
     fetchEvents();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, instance, accounts]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [providerToken]);
 
   // Automatic local-midnight refresh effect
   useEffect(() => {
@@ -201,7 +172,43 @@ export default function Calendar() {
     };
   }, [tick]);
 
-  // Build calendar cells
+  // ---- Move computed date variables BEFORE building cells ----
+  const currentLocal = useMemo(() => new Date(current), [current]);
+  const monthYearLabel = `${currentLocal.toLocaleString(undefined, { month: 'long' })} ${currentLocal.getFullYear()}`;
+  const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const firstOfMonthLocal = useMemo(
+    () => dateAtLocalMidnight(currentLocal.getFullYear(), currentLocal.getMonth(), 1),
+    [currentLocal]
+  );
+  const startDay = (firstOfMonthLocal.getDay() + 6) % 7;
+  const daysInMonth = new Date(currentLocal.getFullYear(), currentLocal.getMonth() + 1, 0).getDate();
+  const dateFor = (day: number) => {
+    const y = currentLocal.getFullYear();
+    const m = String(currentLocal.getMonth() + 1).padStart(2, '0');
+    const d = String(day).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+  const todayIso = isoDateLocal(new Date());
+  const leavesByDate = useMemo(() => {
+    const m = new Map<string, Leave>();
+    for (const l of leaves) m.set(l.date, l);
+    return m;
+  }, [leaves]);
+  const eventsByDate = useMemo(() => {
+    const m = new Map<string, GraphEvent[]>();
+    for (const ev of events) {
+      const startStr = ev.start?.dateTime ?? ev.start?.date;
+      if (!startStr) continue;
+      const evDate = new Date(startStr);
+      const key = isoDateLocal(evDate);
+      if (!m.has(key)) m.set(key, []);
+      m.get(key)!.push(ev);
+    }
+    return m;
+  }, [events]);
+  // ---- end moved block ----
+
+  // Build calendar cells (now safe to use startDay, daysInMonth, dateFor, etc.)
   const cells: Array<{ day?: number; iso?: string }> = [];
   for (let i = 0; i < startDay; i++) cells.push({});
   for (let d = 1; d <= daysInMonth; d++) {
@@ -209,6 +216,23 @@ export default function Calendar() {
     cells.push({ day: d, iso });
   }
   while (cells.length % 7 !== 0) cells.push({});
+
+  const onDayClick = (day: number) => setSelectedDate(dateFor(day));
+  const prevMonth = () => setCurrent(dateAtLocalMidnight(currentLocal.getFullYear(), currentLocal.getMonth() - 1, 1));
+  const nextMonth = () => setCurrent(dateAtLocalMidnight(currentLocal.getFullYear(), currentLocal.getMonth() + 1, 1));
+  const goToday = () => {
+    const now = new Date();
+    setCurrent(dateAtLocalMidnight(now.getFullYear(), now.getMonth(), now.getDate()));
+  };
+  const saveLeave = () => {
+    if (!selectedDate) return;
+    setLeaves((prev) => {
+      const others = prev.filter((p) => p.date !== selectedDate);
+      return [...others, { date: selectedDate, reason: reason || 'Leave', source: 'user' }];
+    });
+    setReason('');
+  };
+  const removeLeave = (date: string) => setLeaves((prev) => prev.filter((p) => p.date !== date));
 
   return (
     <div className="calendar-root">
@@ -221,18 +245,6 @@ export default function Calendar() {
             <div style={{ width: 12 }} />
             <div className="calendar-title">{monthYearLabel}</div>
           </div>
-          {/*
-          <div className="nav-right">
-            {isAuthenticated ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ fontSize: 13, color: '#605e5c' }}>{accounts?.[0]?.name ?? accounts?.[0]?.username}</div>
-                <button onClick={() => instance.logoutPopup()}>Sign out</button>
-              </div>
-            ) : (
-              <button onClick={() => instance.loginPopup(loginRequest)}>Sign in</button>
-            )}
-          </div>
-          */}
 
         </div>
 
@@ -265,19 +277,19 @@ export default function Calendar() {
                   <div style={{ marginTop: 6, fontSize: 12, color: '#605e5c' }}>
                     {dayEvents.slice(0, 2).map((ev, i) => <div key={i}>{ev.subject}</div>)}
                   </div>
-                  
+
                 )}
 
               </div>
             );
           })}
         </div>
- 
+
       </div>
 
       <aside className="calendar-side">
         <h3>Details</h3>
-      
+
         <ButtonRequest />
 
         <div className="side-box">
