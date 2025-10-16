@@ -3,6 +3,7 @@ import './LeaveRequests.css';
 import { useMsal } from '@azure/msal-react';
 import RequestForm, { type RequestFormHandle } from './RequestForm.tsx';
 import { type SavedLeaveRequest } from './types';
+import ButtonRequest from './ButtonRequest.tsx';
 
 const STORAGE_KEY = 'capstone_leave_requests_v1';
 
@@ -78,16 +79,7 @@ export default function LeaveRequests() {
     }
   }, []);
 
-  // when the form becomes visible, ask the child to scroll/focus itself
-  useEffect(() => {
-    if (showForm) {
-      // give React a tick to mount the child, then call scrollTo
-      // RequestForm exposes scrollTo() via ref
-      setTimeout(() => {
-        requestFormRef.current?.scrollTo();
-      }, 50);
-    }
-  }, [showForm]);
+
 
   function handleSavedUpdated(newSaved: SavedLeaveRequest[]) {
     setSaved(newSaved);
@@ -167,31 +159,10 @@ export default function LeaveRequests() {
 
        
         <aside className="right-column">
-          {/* Render the form only when showForm is true */}
-          {showForm && (
-  <RequestForm
-    ref={requestFormRef}
-    onSaved={handleSavedUpdated}
-    initialUsername={username}
-    onClose={() => setShowForm(false)} // <-- new
-  />
-)}
+
 
           <div className="sidebar-buttons">
-            <button
-              className="apply-btn"
-              onClick={() => {
-                if (!showForm) {
-                  setShowForm(true);
-                } else {
-                  // if already visible, just focus/scroll it
-                  requestFormRef.current?.scrollTo();
-                }
-              }}
-            >
-              + Apply Leave
-            </button>
-          {/* <button className="drafts-btn">Drafts</button> */}
+            <ButtonRequest />
           </div>
 
           <div className="sidebar-card stats-card">

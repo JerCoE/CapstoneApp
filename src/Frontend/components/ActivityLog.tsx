@@ -2,6 +2,9 @@ import './ActivityLog.css';
 import React, { useMemo, useState } from 'react';
 import RequestForm, { type RequestFormHandle } from './RequestForm.tsx';
 import { useRef, useEffect } from 'react';
+import ButtonRequest from './ButtonRequest.tsx';
+
+
 type LeaveItem = {
   id: number;
   type: string;
@@ -65,18 +68,7 @@ const ActivityLog: React.FC = () => {
     return Array.from(s).sort();
   }, []);
 
-  const [showForm, setShowForm] = useState(false);
-  const requestFormRef = useRef<RequestFormHandle | null>(null);
-  // When showForm becomes true, the RequestForm will mount;
-// call its scrollTo/focus method (if exposed) after mount.
-useEffect(() => {
-  if (showForm) {
-	// call the method exposed by the RequestForm handle
-	// (use optional chaining in case the method or ref is missing)
-	requestFormRef.current?.scrollTo?.();
-  }
-}, [showForm]);
-
+  
 
   return (
     <div className="activity-page">
@@ -135,29 +127,10 @@ useEffect(() => {
               </tbody>
             </table>
           </div>
-		           {showForm && (<RequestForm ref={requestFormRef}
-              onClose={() => setShowForm(false)} />
-                )}
         </div>
 
         <aside className="right-sidebar">
-         <button
-  className="apply-btn"
-  onClick={() => {
-    if (!showForm) {
-      setShowForm(true);
-      // wait a tick so RequestForm mounts, then ask it to scroll/focus
-      setTimeout(() => {
-        requestFormRef.current?.scrollTo?.();
-      }, 40);
-    } else {
-      // if already visible, just focus/scroll it
-      requestFormRef.current?.scrollTo?.();
-    }
-  }}
->
-  + Apply Leave
-</button>
+         <ButtonRequest />
            {/* <button className="drafts-btn">Drafts</button>*/}
           <div className="filter-panel">
             <label>Filter by leave type</label>

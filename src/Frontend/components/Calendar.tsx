@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useState, useRef } from 'react';
+import { useEffect, useMemo, useState} from 'react';
 import './Calendar.css';
 import { useMsal, useIsAuthenticated } from '@azure/msal-react';
 import { loginRequest } from '../../authConfig';
-import RequestForm, { type RequestFormHandle } from './RequestForm.tsx';
 import ButtonRequest from './ButtonRequest.tsx';
 
 
@@ -211,18 +210,6 @@ export default function Calendar() {
   }
   while (cells.length % 7 !== 0) cells.push({});
 
-  const [showForm, setShowForm] = useState(false);
-  const requestFormRef = useRef<RequestFormHandle | null>(null);
-  // When showForm becomes true, the RequestForm will mount;
-// call its scrollTo/focus method (if exposed) after mount.
-useEffect(() => {
-  if (showForm) {
-    // call the method exposed by the RequestForm handle
-    // (use optional chaining in case the method or ref is missing)
-    requestFormRef.current?.scrollTo?.();
-  }
-}, [showForm]);
-
   return (
     <div className="calendar-root">
       <div className="calendar-main">
@@ -285,9 +272,7 @@ useEffect(() => {
             );
           })}
         </div>
-          {showForm && (<RequestForm ref={requestFormRef}
-              onClose={() => setShowForm(false)} />
-                )}
+ 
       </div>
 
       <aside className="calendar-side">
