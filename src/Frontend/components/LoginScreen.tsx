@@ -15,9 +15,11 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
 
   useEffect(() => {
     document.body.classList.add('login-bg');
+ 
     return () => document.body.classList.remove('login-bg');
   }, []);
 
+  
   // Check for existing session on mount
   useEffect(() => {
     const checkSession = async () => {
@@ -129,7 +131,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
         }
       }
 
-      // Determine role
+ // Determine role
       const roles = Array.isArray(profile?.roles) ? profile.roles : ['employee'];
       const role = roles.includes('admin') ? 'admin' : 'employee';
       
@@ -164,7 +166,9 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
           // Optionally set redirectTo if you want a specific client-side callback:
           // redirectTo: window.location.origin + '/auth/callback'
         },
+
       });
+
 
       console.log('🔍 OAuth response:', { data, error });
 
@@ -184,6 +188,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   };
 
   return (
+   
     <div>
       <div className="Pausepoint">
         <span className="pausepoint-text">PausePoint</span>
@@ -226,6 +231,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
         </div>
       </div>
     </div>
+   
   );
 };
 

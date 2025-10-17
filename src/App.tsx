@@ -48,10 +48,6 @@ export default function App() {
     setRole("");
     navigate('/');
   };
-
-
-  
-
         
   return (
     <div className="size-full">

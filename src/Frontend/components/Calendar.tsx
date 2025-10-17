@@ -220,15 +220,6 @@ export default function Calendar() {
     const now = new Date();
     setCurrent(dateAtLocalMidnight(now.getFullYear(), now.getMonth(), now.getDate()));
   };
-  const saveLeave = () => {
-    if (!selectedDate) return;
-    setLeaves((prev) => {
-      const others = prev.filter((p) => p.date !== selectedDate);
-      return [...others, { date: selectedDate, reason: reason || "Leave", source: "user" }];
-    });
-    setReason("");
-  };
-  const removeLeave = (date: string) => setLeaves((prev) => prev.filter((p) => p.date !== date));
 
   // If the user is signed in (session exists) but there's no provider token,
   // initiate the OAuth flow to request Calendars.Read so we get provider_token.
@@ -304,30 +295,7 @@ export default function Calendar() {
 
         <ButtonRequest />
 
-        <div className="side-box">
-          <h4 style={{ marginTop: 0 }}>Leaves</h4>
-          <ul className="leaves-list">
-            {leaves
-              .slice()
-              .sort((a, b) => a.date.localeCompare(b.date))
-              .map((l) => (
-                <li key={l.date} className="leave-item">
-                  <div>
-                    <div style={{ fontWeight: 600 }}>{l.date}</div>
-                    <div className="leave-reason">{l.reason}</div>
-                    <div style={{ fontSize: 11, color: "#8a8886" }}>{l.source === "graph" ? "From MS Teams" : "User"}</div>
-                  </div>
-                  <div>
-                    <button className="remove-btn" onClick={() => removeLeave(l.date)}>
-                      ✕
-                    </button>
-                  </div>
-                </li>
-              ))}
-            {leaves.length === 0 && <div style={{ color: "#8a8886" }}>No leaves</div>}
-          </ul>
-        </div>
-
+      
         <div className="side-box">
           <h4 style={{ marginTop: 0 }}>Upcoming events (from Teams)</h4>
           <ul style={{ padding: 0, margin: 0, listStyle: "none" }}>
