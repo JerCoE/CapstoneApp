@@ -7,6 +7,7 @@ import ActivityLog from "./Frontend/components/ActivityLog";
 import AdminDashboard from "./Frontend/pages/Admin/AdminDashboard";
 import AuthCallback from './Frontend/pages/AuthCallback';
 import Calendar from "./Frontend/components/Calendar";
+import DashboardHomeScreen from "./Frontend/pages/Employee/DashboardHomeScreen";
 import DashboardLayout from "./Frontend/pages/Employee/EmployeeDashboard";
 import LeaveRequests from "./Frontend/components/LeaveRequests";
 import LeaveTracker from "./Frontend/pages/Admin/LeaveTracker";
@@ -49,42 +50,9 @@ export default function App() {
   };
 
 
-  const DashboardHome: React.FC = () => (
-    <div className="dashboard-home">
-      <div className="main-middle">
-        <div className="mainboard">
-          <div className="mainboard-left">
-            <div className="mainboard-panel">
-              <div className="large-card">
-              </div>
+  
 
-              <div className="card">
-                <h3>Upcoming Leave/s</h3>
-                <div className="card-content upcoming-list">
-                  <ul>
-                    <li>
-                      <strong>Vacation</strong>
-                      <div className="dates">2025-11-03 → 2025-11-07</div>
-                    </li>
-                    <li>
-                      <strong>Sick</strong>
-                      <div className="dates">2025-12-15 → 2025-12-16</div>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <aside className="mainboard-right">
-            <div className="card">
-            </div>
-          </aside>
-        </div>
-      </div>
-    </div>
-  );
-
+        
   return (
     <div className="size-full">
       <div className="app-container">
@@ -98,7 +66,7 @@ export default function App() {
             path="/dashboard/*"
             element={isLoggedIn ? <DashboardLayout onLogout={handleLogout} userEmail={userEmail} /> : <Navigate to="/" />}
           >
-            <Route index element={<DashboardHome />} />
+            <Route index element={<DashboardHomeScreen />} />
             <Route path="leave" element={<LeaveRequests />} />
             <Route path="calendar" element={<Calendar />} />
             <Route path="activity" element={<ActivityLog />} />
