@@ -1,7 +1,7 @@
 import "./App.css";
 
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import React, { useState } from "react";
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
 import ActivityLog from "./Frontend/components/ActivityLog";
 import AdminDashboard from "./Frontend/pages/Admin/AdminDashboard";
@@ -9,7 +9,6 @@ import AuthCallback from './Frontend/pages/AuthCallback';
 import Calendar from "./Frontend/components/Calendar";
 import DashboardLayout from "./Frontend/pages/Employee/EmployeeDashboard";
 import LeaveRequests from "./Frontend/components/LeaveRequests";
-
 import LeaveTracker from "./Frontend/pages/Admin/LeaveTracker";
 import LoginScreen from "./Frontend/components/LoginScreen";
 import Masterlist from "./Frontend/pages/Admin/Masterlist";
