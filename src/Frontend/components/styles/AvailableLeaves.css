@@ -1,0 +1,29 @@
+
+/*
+	AvailableLeaves.css
+	-------------------
+	Styles scoped to the Available Leaves card.
+
+	Rules below:
+	- .available-leaves h3: heading appearance (spacing, color, font size).
+	- .available-leaves .muted: subtitle spacing and muted color usage.
+	- .center-column .available-leaves: constrain card width inside the center column so
+		it doesn't become too wide on large screens.
+*/
+.available-leaves h3 {
+	/* Remove default margin below the heading, set brand color and readable size */
+	margin: 0 0 15px 0;
+	color: #123a78;
+	font-size: 18px;
+}
+
+.available-leaves .muted {
+	/* Smaller, subdued subtitle text with spacing below to separate from content */
+	margin-bottom: 12px;
+    margin-top: 0px;
+}
+
+.center-column .available-leaves {
+	/* Limit maximum width of the card to improve readability */
+	max-width: 800px; /* increased so Available Leaves fills more of the center column */
+}
