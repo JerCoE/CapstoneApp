@@ -2,13 +2,13 @@
 
 import '../../components/nav/Navbar.css';
 
-import Navbar from '../../components/nav/Navbar';
+import RoleChecker from '../../components/nav/RoleChecker';
 import { Outlet } from 'react-router-dom';
 
 export default function DashboardLayout({ onLogout, userEmail }: { onLogout?: () => void; userEmail?: string }) {
   return (
     <div className="employee-dashboard">
-      <Navbar onLogout={onLogout} userEmail={userEmail} />
+  <RoleChecker onLogout={onLogout} userEmail={userEmail} />
       
       <main className="dashboard-main">
         <Outlet />

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import Navbar from '../../components/nav/Navbar';
+import RoleChecker from '../../components/nav/RoleChecker';
 import supabase from '../../lib/supabaseClient';
 
 type Profile = { roles?: string[]; email?: string; display_name?: string };
@@ -45,7 +45,7 @@ export default function Approvals() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <Navbar onLogout={() => supabase.auth.signOut()} userEmail={profile?.email} isAdmin={isAdmin} />
+  <RoleChecker onLogout={() => supabase.auth.signOut()} userEmail={profile?.email} isAdmin={isAdmin} />
 
       <main style={{ padding: '24px', flex: 1 }}>
         <h1>Approvals</h1>

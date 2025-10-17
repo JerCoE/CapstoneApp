@@ -1,7 +1,6 @@
 import "./App.css";
 
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
-import React, { useState } from "react";
 
 import ActivityLog from "./Frontend/components/ActivityLog";
 import AdminDashboard from "./Frontend/pages/Admin/AdminDashboard";
@@ -13,7 +12,13 @@ import LeaveRequests from "./Frontend/components/LeaveRequests";
 import LeaveTracker from "./Frontend/pages/Admin/LeaveTracker";
 import LoginScreen from "./Frontend/components/LoginScreen";
 import Masterlist from "./Frontend/pages/Admin/Masterlist";
+import SULDashboard from "./Frontend/pages/SUL/SULDashboard";
+import SULHomeScreen from "./Frontend/pages/SUL/SULHomeScreen";
+import Approvals from "./Frontend/pages/Admin/Approvals";
 import { supabase } from './Frontend/lib/supabaseClient';
+import { useState } from "react";
+import CXHomeScreen from "./Frontend/pages/CX/CXHomeScreen";
+import CXTeams from "./Frontend/pages/CX/CXTeams";
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -25,11 +30,14 @@ export default function App() {
   const handleLogin = (emailOrId?: string, roleFromLogin?: string) => {
     if (emailOrId) setUserEmail(emailOrId);
 
-    const roleNormalized = roleFromLogin === 'admin' ? 'admin' : 'employee';
+    // Normalize incoming role; support 'sul' (for SUL/PL), 'admin', otherwise employee
+    const roleNormalized = roleFromLogin === 'admin' ? 'admin' : (roleFromLogin === 'sul' ? 'sul' : 'employee');
     setRole(roleNormalized);
     setIsLoggedIn(true);
     // navigate to the correct area
-    navigate(roleNormalized === 'admin' ? '/admin' : '/dashboard');
+    if (roleNormalized === 'admin') navigate('/admin');
+    else if (roleNormalized === 'sul') navigate('/sul');
+    else navigate('/dashboard');
   };
 
   const handleLogout = async () => {
@@ -74,9 +82,32 @@ export default function App() {
           >
             {/* nested admin routes render inside AdminDashboard via <Outlet /> */}
             <Route index element={<LeaveTracker />} />
+            <Route path="approvals" element={<Approvals />} />
             <Route path="masterlist" element={<Masterlist />} />
             <Route path="activity" element={<ActivityLog />} />
             <Route path="calendar" element={<Calendar />} />
+          </Route>
+
+          <Route
+            path="/sul/*"
+            element={isLoggedIn ? <SULDashboard /> : <Navigate to="/" />}
+          >
+            <Route index element={<SULHomeScreen />} />
+            <Route path="approvals" element={<Approvals />} />
+            <Route path="leave" element={<LeaveRequests />} />
+            <Route path="calendar" element={<Calendar />} />
+            <Route path="activity" element={<ActivityLog />} />
+          </Route>
+
+          <Route
+            path="/cx/*"
+            element={isLoggedIn ? <DashboardLayout onLogout={handleLogout} userEmail={userEmail} /> : <Navigate to="/" />}
+          >
+            <Route index element={<CXHomeScreen />} />
+            <Route path="leave" element={<LeaveRequests />} />
+            <Route path="calendar" element={<Calendar />} />
+            <Route path="teams" element={<CXTeams />} />  {/* replace with Teams component when available */}
+            <Route path="activity" element={<ActivityLog />} />
           </Route>
 
           <Route path="/auth/callback" element={<AuthCallback />} />

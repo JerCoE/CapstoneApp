@@ -1,6 +1,6 @@
-import Navbar from '../../components/nav/Navbar';
+import RoleChecker from '../../components/nav/RoleChecker';
 import { Outlet } from 'react-router-dom';
-import React from 'react';
+// React import not required with new JSX transform
 import { useAuth } from '../../lib/AuthContext';
 
 export default function AdminDashboard() {
@@ -9,7 +9,7 @@ export default function AdminDashboard() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <Navbar userEmail={user?.email ?? undefined} isAdmin={isAdmin} />
+  <RoleChecker userEmail={user?.email ?? undefined} isAdmin={isAdmin} />
 
       <main style={{ padding: '24px', flex: 1 }}>
         <h1>Administration</h1>

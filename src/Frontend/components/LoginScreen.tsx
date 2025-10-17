@@ -131,10 +131,19 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
         }
       }
 
- // Determine role
+      // Determine role (case-insensitive). Map 'sul' and 'pl' to the SUL dashboard role.
       const roles = Array.isArray(profile?.roles) ? profile.roles : ['employee'];
-      const role = roles.includes('admin') ? 'admin' : 'employee';
-      
+      const normalizedRoles = roles.map((r: any) => String(r).toLowerCase());
+
+      let role = 'employee';
+      if (normalizedRoles.includes('admin')) {
+        role = 'admin';
+      } else if (normalizedRoles.includes('sul') || normalizedRoles.includes('pl')) {
+        role = 'sul';
+      } else if (normalizedRoles.includes('cx')) {
+        role = 'cx';
+      }
+
       console.log('✅ User profile found, role:', role);
       setShowConfirm(true);
       setProcessing(false);
