@@ -1,8 +1,7 @@
-import './styles/ActivityLog.css';
-
-import React, { useEffect, useMemo, useState } from 'react';
-
+import './ActivityLog.css';
+import React, { useMemo, useState, useEffect } from 'react';
 import ButtonRequest from './ButtonRequest.tsx';
+
 
 type LeaveItem = {
   id: number;

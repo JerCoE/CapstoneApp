@@ -10,12 +10,6 @@ import Calendar from "./Frontend/components/Calendar";
 import DashboardLayout from "./Frontend/pages/Employee/EmployeeDashboard";
 import LeaveRequests from "./Frontend/components/LeaveRequests";
 
-import LeavesRemaining from "./Frontend/components/LeavesRemaining";
-import ButtonRequest from "./Frontend/components/ButtonRequest";
-import QuickStats from "./Frontend/components/QuickStats";
-import Teams from "./Frontend/components/Teams";
-import JoinTeam from "./Frontend/components/JoinTeam";
-
 import LeaveTracker from "./Frontend/pages/Admin/LeaveTracker";
 import LoginScreen from "./Frontend/components/LoginScreen";
 import Masterlist from "./Frontend/pages/Admin/Masterlist";
@@ -55,13 +49,6 @@ export default function App() {
     navigate('/');
   };
 
-  const sampleLeaves = [
-    { id: 'holiday', label: 'Holiday Leave', used: 7, total: 15, color: '#9b59b6' },
-    { id: 'birthday', label: 'Birthday Leave', used: 0, total: 1, color: '#f39c12' },
-    { id: 'sick', label: 'Sick Leave', used: 3, total: 15, color: '#e74c3c' },
-    { id: 'vacation', label: 'Vacation Leave', used: 9, total: 15, color: '#2ecc71' },
-    { id: 'parental', label: 'Parental Leave', used: 9, total: 130, color: '#3498db' },
-  ];
 
   const DashboardHome: React.FC = () => (
     <div className="dashboard-home">
@@ -70,7 +57,6 @@ export default function App() {
           <div className="mainboard-left">
             <div className="mainboard-panel">
               <div className="large-card">
-                <LeavesRemaining className="leaves-remaining-wrapper" leaves={sampleLeaves} />
               </div>
 
               <div className="card">
@@ -93,12 +79,7 @@ export default function App() {
 
           <aside className="mainboard-right">
             <div className="card">
-              <ButtonRequest />
             </div>
-
-            <QuickStats />
-            <Teams />
-            <JoinTeam />
           </aside>
         </div>
       </div>
