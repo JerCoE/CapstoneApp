@@ -1,0 +1,4 @@
+.quick-stats h4 { margin:0 0 10px 0; color:#1f3f63; font-size:16px }
+.quick-stats { width:100%; max-width:200px; }
+.quick-stats ul { list-style:none; padding:0; margin:10px 0 0 0; font-size:14px }
+.quick-stats li { padding:8px 0; border-bottom:1px dashed #eef4fb }

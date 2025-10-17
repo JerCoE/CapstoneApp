@@ -1,0 +1,27 @@
+/*
+	UpcomingLeaves.css
+	-------------------
+	Styles for the Upcoming Leave/s card.
+
+	- .upcoming-leaves h3: heading spacing and color for the card title.
+	- .upcoming-table tbody tr: visual treatment for table rows (card-like background
+		and rounded corners so rows appear as separated chips).
+*/
+.upcoming-leaves h3 {
+	/* Slight spacing under the heading and brand color */
+	margin: 0 0 12px 0;
+	color: #123a78;
+	font-size: 18px;
+}
+
+.upcoming-table tbody tr {
+	/* Give each row a white background and rounded corners to look like individual items */
+	background: #fff;
+	border-radius: 8px;
+	margin-bottom: 12px;
+}
+
+/* Allow the Upcoming Leaves card to grow wider in the center column to reduce empty mid-gap */
+.center-column .upcoming-leaves {
+	max-width: 920px;
+}

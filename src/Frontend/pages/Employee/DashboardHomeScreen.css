@@ -1,0 +1,98 @@
+/* Page-level layout and utilities for DashboardHomeScreen */
+.page-grid {
+  display: grid;
+  /* Use a single column layout and place an inner flex container to hold
+     the main-left content and an inline-right stack. This eliminates the
+     separate right column and collapses the large middle gap. */
+  grid-template-columns: 1fr;
+  gap: 0;
+  padding: 24px 32px;
+  font-family: Inter, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  align-items: start;
+  background: linear-gradient(180deg, #f7fbff 0%, #ffffff 100%);
+}
+
+.greeting h2 { margin:0; color:#123a78; font-size:20px; font-weight:700 }
+
+.center-column { display:flex; flex-direction:column; gap:18px }
+
+/* inner layout: left content + inline right widgets */
+.content-inner { display:flex; gap:24px; align-items:flex-start }
+.main-left { flex: 1 1 auto; display:flex; flex-direction:column; gap:18px }
+.inline-right { width:260px; display:flex; flex-direction:column; gap:12px; align-items:flex-start }
+
+.right-column { display:none; }
+
+/* Responsive: fallback grid behavior */
+@media (max-width: 1100px) {
+  .page-grid { grid-template-columns: 1fr; padding:12px }
+}
+
+.upcoming-table { width:100%; border-collapse:collapse; margin-top:14px; }
+.upcoming-table th, .upcoming-table td { padding:10px 14px; font-size:14px; }
+.upcoming-table thead th { background:transparent; color:#6b7280; font-weight:600; }
+.upcoming-table tbody tr { border:1px solid #eef6fb; border-radius:8px; }
+.status { display:inline-block; width:12px; height:12px; border-radius:50%; margin-right:10px; }
+.status.approved { background:#4fd07a }
+.status.pending { background:#ffb86b }
+
+.quick-stats ul { list-style:none; padding:0; margin:10px 0 0 0; font-size:14px }
+.quick-stats li { padding:8px 0; border-bottom:1px dashed #eef4fb }
+
+.teams-list { display:flex; flex-direction:column; gap:8px; }
+.team-pill { padding:10px 14px; border-radius:12px; background:#f3f7fb; font-weight:600; color:#1f3f63; box-shadow: inset 0 1px 0 rgba(255,255,255,0.6) }
+.join-list .join-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #f1f4f6 }
+.btn.small { padding:6px 10px; border-radius:10px; background:#2e6aa0; color:white; border:none; cursor:pointer }
+
+/* Apply button larger and pill-like to match mock */
+.apply-btn { background: linear-gradient(180deg,#2e6aa0,#1f4f7a); color: white; box-shadow: 0 10px 22px rgba(46,106,160,0.14); font-size: 15px; display: inline-block; padding: 12px 18px; border-radius: 12px; font-weight:700; }
+
+.filter-panel {
+  background: transparent;
+  border-radius: 8px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #333;
+}
+
+.filter-panel label {
+  font-size: 12px;
+  color: #6b6b6b;
+  margin-bottom: 2px;
+}
+
+.filter-panel select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #e6eef7;
+  background: white;
+  font-size: 13px;
+}
+
+/* responsive: at smaller widths stack the sidebar under the table */
+@media (max-width: 1100px) {
+  .activity-content { gap: 12px; padding: 12px; }
+  .right-sidebar { width: 220px; }
+  .search-box input { width: 150px; }
+}
+
+/* narrow / mobile: stack and allow scroll */
+@media (max-width: 900px) {
+  .activity-content {
+    flex-direction: column;
+    padding: 12px;
+  }
+  .right-sidebar {
+    width: 100%;
+    flex-direction: row;
+    gap: 8px;
+    justify-content: space-between;
+  }
+  .leave-table {
+    table-layout: auto; /* allow columns to wrap on very narrow screens */
+    font-size: 12px;
+  }
+  .leave-table tbody td { white-space: normal; }
+}

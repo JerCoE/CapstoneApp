@@ -163,52 +163,48 @@
   display: block;
 }
 
-.filter-panel {
-  background: transparent;
+/* Generic card used across dashboard */
+.card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(17, 38, 63, 0.06);
+  border: 1px solid #e9f2fb;
+  margin-bottom: 18px;
+}
+
+.muted { color: #7b7b7b; font-size: 13px; }
+
+/* Colored dots and left accent bars for Available Leaves */
+.leave-list { list-style: none; padding: 0; margin: 12px 0 0 0; }
+.leave-list li { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border:1px solid #eef6fb; border-radius:12px; margin-bottom:12px; background:#fbfdff; }
+.leave-list .balance { color:#2b3b4f; font-weight:700; font-size:13px; min-width:140px; text-align:right }
+.dot { width:14px; height:14px; border-radius:50%; display:inline-block; margin-right:12px; }
+
+/* Updated palette to match mock: Holiday (cyan), Birthday (magenta), Sick (rust), Vacation (dark blue), Parental (light blue) */
+.dot.purple { background:#00d7c2 } /* Holiday */
+.dot.orange { background:#ff33cc } /* Birthday */
+.dot.red { background:#d16000 } /* Sick */
+.dot.green { background:#1a3bb8 } /* Vacation (dark blue) */
+.dot.blue { background:#6fcfff } /* Parental (light blue) */
+
+/* Leave item left accent bar */
+.leave-item { position:relative; overflow:visible }
+.leave-item::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 8px;
+  bottom: 8px;
+  width: 6px;
   border-radius: 8px;
-  padding: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  color: #333;
+  background: transparent;
 }
+.leave-item.purple::before { background: linear-gradient(180deg,#bff7ef,#00d7c2); }
+.leave-item.orange::before { background: linear-gradient(180deg,#ffd6f6,#ff33cc); }
+.leave-item.red::before { background: linear-gradient(180deg,#ffe6d6,#d16000); }
+.leave-item.green::before { background: linear-gradient(180deg,#dce6ff,#1a3bb8); }
+.leave-item.blue::before { background: linear-gradient(180deg,#e6f8ff,#6fcfff); }
 
-.filter-panel label {
-  font-size: 12px;
-  color: #6b6b6b;
-  margin-bottom: 2px;
-}
-
-.filter-panel select {
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #e6eef7;
-  background: white;
-  font-size: 13px;
-}
-
-/* responsive: at smaller widths stack the sidebar under the table */
-@media (max-width: 1100px) {
-  .activity-content { gap: 12px; padding: 12px; }
-  .right-sidebar { width: 220px; }
-  .search-box input { width: 150px; }
-}
-
-/* narrow / mobile: stack and allow scroll */
-@media (max-width: 900px) {
-  .activity-content {
-    flex-direction: column;
-    padding: 12px;
-  }
-  .right-sidebar {
-    width: 100%;
-    flex-direction: row;
-    gap: 8px;
-    justify-content: space-between;
-  }
-  .leave-table {
-    table-layout: auto; /* allow columns to wrap on very narrow screens */
-    font-size: 12px;
-  }
-  .leave-table tbody td { white-space: normal; }
-}
+.label-left { display:flex; align-items:center; gap:8px }
+.leave-label { font-weight:600; color:#1f3f63 }
