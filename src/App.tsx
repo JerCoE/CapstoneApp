@@ -4,7 +4,11 @@ import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 
 import ActivityLog from "./Frontend/components/ActivityLog";
 import AdminDashboard from "./Frontend/pages/Admin/AdminDashboard";
+import Approvals from "./Frontend/pages/Admin/Approvals";
 import AuthCallback from './Frontend/pages/AuthCallback';
+import CXDashboard from "./Frontend/pages/CX/CXDashboard";
+import CXHomeScreen from "./Frontend/pages/CX/CXHomeScreen";
+import CXTeams from "./Frontend/pages/CX/CXTeams";
 import Calendar from "./Frontend/components/Calendar";
 import DashboardHomeScreen from "./Frontend/pages/Employee/DashboardHomeScreen";
 import DashboardLayout from "./Frontend/pages/Employee/EmployeeDashboard";
@@ -14,11 +18,8 @@ import LoginScreen from "./Frontend/components/LoginScreen";
 import Masterlist from "./Frontend/pages/Admin/Masterlist";
 import SULDashboard from "./Frontend/pages/SUL/SULDashboard";
 import SULHomeScreen from "./Frontend/pages/SUL/SULHomeScreen";
-import Approvals from "./Frontend/pages/Admin/Approvals";
 import { supabase } from './Frontend/lib/supabaseClient';
 import { useState } from "react";
-import CXHomeScreen from "./Frontend/pages/CX/CXHomeScreen";
-import CXTeams from "./Frontend/pages/CX/CXTeams";
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -30,13 +31,22 @@ export default function App() {
   const handleLogin = (emailOrId?: string, roleFromLogin?: string) => {
     if (emailOrId) setUserEmail(emailOrId);
 
-    // Normalize incoming role; support 'sul' (for SUL/PL), 'admin', otherwise employee
-    const roleNormalized = roleFromLogin === 'admin' ? 'admin' : (roleFromLogin === 'sul' ? 'sul' : 'employee');
+    // Normalize incoming role safely and case-insensitively
+    const roleNormalized = (() => {
+      const r = (roleFromLogin ?? '').toString().toLowerCase();
+      if (r === 'admin') return 'admin';
+      if (r === 'sul') return 'sul';
+      if (r === 'cx') return 'cx';
+      return 'employee';
+    })();
+
     setRole(roleNormalized);
     setIsLoggedIn(true);
+
     // navigate to the correct area
     if (roleNormalized === 'admin') navigate('/admin');
     else if (roleNormalized === 'sul') navigate('/sul');
+    else if (roleNormalized === 'cx') navigate('/cx');   // <- new
     else navigate('/dashboard');
   };
 
@@ -101,12 +111,12 @@ export default function App() {
 
           <Route
             path="/cx/*"
-            element={isLoggedIn ? <DashboardLayout onLogout={handleLogout} userEmail={userEmail} /> : <Navigate to="/" />}
+            element={isLoggedIn ? <CXDashboard /> : <Navigate to="/" />}
           >
             <Route index element={<CXHomeScreen />} />
             <Route path="leave" element={<LeaveRequests />} />
             <Route path="calendar" element={<Calendar />} />
-            <Route path="teams" element={<CXTeams />} />  {/* replace with Teams component when available */}
+            <Route path="teams" element={<CXTeams />} />
             <Route path="activity" element={<ActivityLog />} />
           </Route>
 

@@ -141,6 +141,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
       } else if (normalizedRoles.includes('sul') || normalizedRoles.includes('pl')) {
         role = 'sul';
       } else if (normalizedRoles.includes('cx')) {
+        // New: route CX users to CX area
         role = 'cx';
       }
 

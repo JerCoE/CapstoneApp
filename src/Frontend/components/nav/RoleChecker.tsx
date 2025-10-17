@@ -1,6 +1,7 @@
 import './Navbar.css';
-import CXNavbar from './CXNavbar';
+
 import AdminNavbar from './AdminNavbar';
+import CXNavbar from './CXNavbar';
 import EmployeeNavbar from './EmployeeNavbar';
 import SULNavbar from './SULNavbar';
 import { useAuth } from '../../lib/AuthContext';
@@ -11,8 +12,8 @@ type NavbarProps = {
   userName?: string;
   userEmail?: string;
   isAdmin?: boolean;
-  // optional mode: when 'sul' the navbar shows the SUL-specific minimal link set
-  mode?: 'default' | 'sul';
+  // optional mode: when 'sul' or 'cx' the navbar shows the role-specific minimal link set
+  mode?: 'default' | 'sul' | 'cx';
 };
 
 export default function RoleChecker({
@@ -34,12 +35,12 @@ export default function RoleChecker({
     return <SULNavbar onLogout={onLogout} userName={userName} userEmail={userEmail} />;
   }
 
-  if (mode === 'default' && isAdminDerived) {
-    return <AdminNavbar onLogout={onLogout} userName={userName} userEmail={userEmail} />;
+  if (mode === 'cx' || ((!mode || mode === 'default') && isCXDerived)) {
+    return <CXNavbar onLogout={onLogout} userName={userName} userEmail={userEmail} />;
   }
 
-  if (mode === 'default' && isCXDerived) {
-    return <CXNavbar onLogout={onLogout} userName={userName} userEmail={userEmail} />;
+  if (mode === 'default' && isAdminDerived) {
+    return <AdminNavbar onLogout={onLogout} userName={userName} userEmail={userEmail} />;
   }
 
   return <EmployeeNavbar onLogout={onLogout} userName={userName} userEmail={userEmail} />;
