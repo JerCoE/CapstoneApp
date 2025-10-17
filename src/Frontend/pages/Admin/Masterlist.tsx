@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 
 import React from 'react';
+import './styles/Masterlist.css';
+import DeletePng from '../../assets/Delete Button.png';
+import DetailsPng from '../../assets/Details Icon.png';
+import EditPng from '../../assets/Edit Icon.png';
 import { supabase } from '../../lib/supabaseClient';
 
 type UserRow = {
@@ -16,6 +20,12 @@ export default function Masterlist(): React.ReactElement {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [deptFilter, setDeptFilter] = useState('All');
+  const [roleFilter, setRoleFilter] = useState('All');
+  const [detailsUser, setDetailsUser] = useState<UserRow | null>(null);
+  const [editUser, setEditUser] = useState<UserRow | null>(null);
+  const [editRole, setEditRole] = useState('');
 
   const ADMIN_FN_URL = import.meta.env.VITE_ADMIN_FN_URL as string | undefined;
 
@@ -126,73 +136,155 @@ export default function Masterlist(): React.ReactElement {
   }
 
   return (
-    <section style={{ padding: 24 }}>
-      <h2>MASTERLIST</h2>
-      <p style={{ color: '#666', fontSize: '0.9em' }}>
-        Manage user accounts and roles
-      </p>
+    <section className="masterlist-card">
+      <div className="masterlist-header">
+        <div>
+          <h2>Employee Masterlist</h2>
+          <p className="muted">View their leave activities and status</p>
+        </div>
+
+        <div className="masterlist-controls">
+          <input
+            className="masterlist-search"
+            placeholder="Search..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <select className="masterlist-filter" value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)}>
+            <option>All</option>
+            <option>Web 1</option>
+            <option>Web 2</option>
+            <option>Data & AI</option>
+            <option>Quality Assurance</option>
+            <option>UI UX</option>
+            <option>HR</option>
+          </select>
+          <select className="masterlist-filter" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+            <option>All</option>
+            <option>admin</option>
+            <option>employee</option>
+            <option>SUL</option>
+            <option>PL</option>
+            <option>CX</option>
+          </select>
+        </div>
+      </div>
 
       {loading && <p>Loading users…</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p className="error">{error}</p>}
 
-      {!loading && users.length === 0 && <p>No users found (admin account excluded).</p>}
+      {!loading && users.length === 0 && <p className="muted">No users found (admin account excluded).</p>}
 
       {users.length > 0 && (
         <>
-          <p style={{ marginBottom: 16 }}>
-            <strong>{users.length}</strong> user{users.length !== 1 ? 's' : ''} found
-          </p>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th style={{ textAlign: 'left' }}>Email</th>
-              <th>Role</th>
-              <th>Created</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u) => {
-              const id = u.id;
-              return (
-                <tr key={id} style={{ borderTop: '1px solid #eee' }}>
-                  <td style={{ padding: '8px 4px' }}>{u.email ?? <i>unknown</i>}</td>
-                  <td style={{ textAlign: 'center' }}>
-                    {u.roles ? u.roles.join(', ') : (u.app_metadata?.role ?? '')}
-                  </td>
-                  <td style={{ textAlign: 'center' }}>{u.created_at ? new Date(u.created_at).toLocaleString() : ''}</td>
-                  <td style={{ textAlign: 'center' }}>
-                    {busyId === id ? (
-                      <em>working…</em>
-                    ) : (
-                      <>
-                        <select
-                          onChange={(e) => {
-                            if (e.target.value) {
-                              assignRole(id, e.target.value);
-                              e.target.value = ''; // reset dropdown
-                            }
-                          }}
-                          style={{ marginRight: 8, padding: '4px 8px' }}
-                          defaultValue=""
-                        >
-                          <option value="" disabled>Assign Role</option>
-                          <option value="SUL">SUL</option>
-                          <option value="PL">PL</option>
-                          <option value="CX">CX</option>
-                        </select>
-                        <button onClick={() => deleteUser(id)} style={{ color: 'red', padding: '4px 8px' }}>
-                          Delete
-                        </button>
-                      </>
-                    )}
-                  </td>
+          <p className="count"><strong>{users.length}</strong> user{users.length !== 1 ? 's' : ''} found</p>
+
+          <div className="masterlist-table-wrap">
+            <table className="masterlist-table">
+              <thead>
+                <tr>
+                  <th>Employee ID</th>
+                  <th>Name</th>
+                  <th>Department</th>
+                  <th>Role</th>
+                  <th>Team</th>
+                  <th>Action</th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              </thead>
+              <tbody>
+                {users
+                  .filter((u) => {
+                    const q = search.trim().toLowerCase();
+                    if (q === '') return true;
+                    const email = (u.email || '').toLowerCase();
+                    const id = (u.id || '').toLowerCase();
+                    return email.includes(q) || id.includes(q) || (u.full_name || '').toLowerCase().includes(q);
+                  })
+                  .filter((u) => deptFilter === 'All' || (u.department || '') === deptFilter)
+                  .filter((u) => {
+                    if (roleFilter === 'All') return true;
+                    const primaryRole = (u.roles && u.roles[0]) || u.app_metadata?.role || '';
+                    return primaryRole === roleFilter;
+                  })
+                  .map((u, idx) => {
+                    const id = u.id;
+                    const shortId = id ? `#${id.slice(-4)}` : `#${1000 + idx}`;
+                    const name = u.full_name ?? u.email ?? 'Unknown';
+                    const dept = u.department ?? '—';
+                    const primaryRole = (u.roles && u.roles[0]) || u.app_metadata?.role || '—';
+                    const team = u.team ?? 'Team 2';
+                    return (
+                      <tr key={id || idx} className={idx % 2 === 0 ? 'row--alt' : ''}>
+                        <td className="col-id">{shortId}</td>
+                        <td className="col-name">{name}</td>
+                        <td className="col-dept">{dept}</td>
+                        <td className="col-role">{primaryRole}</td>
+                        <td className="col-team">{team}</td>
+                        <td className="col-actions">
+                          {busyId === id ? (
+                            <em>working…</em>
+                          ) : (
+                            <div className="actions-row">
+                              <button className="icon-btn" title="Details" onClick={() => setDetailsUser(u)}>
+                                <img src={DetailsPng} alt="Details" className="action-img" />
+                              </button>
+
+                              <button className="icon-btn" title="Edit role" onClick={() => { setEditUser(u); setEditRole((u.roles && u.roles[0]) || ''); }}>
+                                <img src={EditPng} alt="Edit" className="action-img" />
+                              </button>
+
+                              <button className="icon-btn icon-delete" title="Delete" onClick={() => deleteUser(id)}>
+                                <img src={DeletePng} alt="Delete" className="action-img action-delete" />
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
         </>
+      )}
+
+      {/* Details modal */}
+      {detailsUser && (
+        <div className="modal-backdrop" onClick={() => setDetailsUser(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Employee details</h3>
+            <div className="modal-row"><strong>ID:</strong> {detailsUser.id}</div>
+            <div className="modal-row"><strong>Email:</strong> {detailsUser.email}</div>
+            <div className="modal-row"><strong>Roles:</strong> {detailsUser.roles ? detailsUser.roles.join(', ') : (detailsUser.app_metadata?.role ?? '')}</div>
+            <div className="modal-row"><strong>Created:</strong> {detailsUser.created_at ? new Date(detailsUser.created_at).toLocaleString() : ''}</div>
+            <div style={{ marginTop: 12 }}>
+              <button onClick={() => setDetailsUser(null)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit modal */}
+      {editUser && (
+        <div className="modal-backdrop" onClick={() => setEditUser(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Edit role</h3>
+            <div style={{ marginTop: 8 }}>
+              <select value={editRole} onChange={(e) => setEditRole(e.target.value)}>
+                <option value="">-- select role --</option>
+                <option value="admin">admin</option>
+                <option value="employee">employee</option>
+                <option value="SUL">SUL</option>
+                <option value="PL">PL</option>
+                <option value="CX">CX</option>
+              </select>
+            </div>
+            <div style={{ marginTop: 12 }}>
+              <button onClick={() => { if (editRole) { assignRole(editUser.id, editRole); setEditUser(null); } }}>Save</button>
+              <button onClick={() => setEditUser(null)} style={{ marginLeft: 8 }}>Cancel</button>
+            </div>
+          </div>
+        </div>
       )}
     </section>
   );
