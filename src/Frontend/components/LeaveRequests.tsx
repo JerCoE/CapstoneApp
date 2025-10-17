@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import './styles/LeaveRequests.css';
+import './LeaveRequests.css';
 import { useMsal } from '@azure/msal-react';
 import RequestForm, { type RequestFormHandle } from './RequestForm.tsx';
 import { type SavedLeaveRequest } from './types';
@@ -79,8 +79,6 @@ export default function LeaveRequests() {
     }
   }, []);
 
-
-
   function handleSavedUpdated(newSaved: SavedLeaveRequest[]) {
     setSaved(newSaved);
   }
@@ -159,9 +157,8 @@ export default function LeaveRequests() {
 
        
         <aside className="right-column">
-
-
           <div className="sidebar-buttons">
+
             <ButtonRequest />
           </div>
 
