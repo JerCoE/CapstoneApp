@@ -2,8 +2,6 @@
 
 import '../../components/nav/Navbar.css';
 
-import ButtonRequest from '../../components/ButtonRequest';
-import LeaveRequests from '../../components/LeaveRequests';
 import Navbar from '../../components/nav/Navbar';
 import { Outlet } from 'react-router-dom';
 
