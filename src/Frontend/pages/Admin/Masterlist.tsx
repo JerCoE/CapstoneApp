@@ -6,7 +6,7 @@ type UserRow = {
   id: string;
   email?: string | null;
   created_at?: string | null;
-  role?: string | null;
+  roles?: string[] | null;
   [k: string]: any;
 };
 
@@ -66,7 +66,11 @@ export default function Masterlist(): React.ReactElement {
       }
 
       const body = await res.json();
+      console.log('Function response:', body);  // DEBUG: see what function returns
       setUsers(Array.isArray(body.users) ? body.users : []);
+      if (body.users && body.users.length === 0) {
+        console.warn('Function returned empty users array - check your users table or is_admin function');
+      }
     } catch (err: any) {
       console.error('Failed to load users', err);
       setError(err?.message || String(err));
@@ -110,14 +114,9 @@ export default function Masterlist(): React.ReactElement {
     }
   }
 
-  async function promote(userId: string) {
-    if (!confirm('Promote this user to admin?')) return;
-    await performAction({ action: 'add_role', target_user: userId, role: 'admin' }, 'User promoted to admin');
-  }
-
-  async function removeRole(userId: string) {
-    if (!confirm('Remove admin role from this user?')) return;
-    await performAction({ action: 'remove_role', target_user: userId, role: 'admin' }, 'Role removed');
+  async function assignRole(userId: string, role: string) {
+    if (!confirm(`Assign role "${role}" to this user?`)) return;
+    await performAction({ action: 'add_role', target_user: userId, role }, `Role "${role}" assigned`);
   }
 
   async function deleteUser(userId: string) {
@@ -128,14 +127,21 @@ export default function Masterlist(): React.ReactElement {
   return (
     <section style={{ padding: 24 }}>
       <h2>MASTERLIST</h2>
+      <p style={{ color: '#666', fontSize: '0.9em' }}>
+        Manage user accounts and roles
+      </p>
 
       {loading && <p>Loading users…</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
-      {!loading && users.length === 0 && <p>No users were returned.</p>}
+      {!loading && users.length === 0 && <p>No users found (admin account excluded).</p>}
 
       {users.length > 0 && (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <>
+          <p style={{ marginBottom: 16 }}>
+            <strong>{users.length}</strong> user{users.length !== 1 ? 's' : ''} found
+          </p>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr>
               <th style={{ textAlign: 'left' }}>Email</th>
@@ -150,20 +156,31 @@ export default function Masterlist(): React.ReactElement {
               return (
                 <tr key={id} style={{ borderTop: '1px solid #eee' }}>
                   <td style={{ padding: '8px 4px' }}>{u.email ?? <i>unknown</i>}</td>
-                  <td style={{ textAlign: 'center' }}>{u.role ?? (u.app_metadata?.role ?? '')}</td>
+                  <td style={{ textAlign: 'center' }}>
+                    {u.roles ? u.roles.join(', ') : (u.app_metadata?.role ?? '')}
+                  </td>
                   <td style={{ textAlign: 'center' }}>{u.created_at ? new Date(u.created_at).toLocaleString() : ''}</td>
                   <td style={{ textAlign: 'center' }}>
                     {busyId === id ? (
                       <em>working…</em>
                     ) : (
                       <>
-                        <button onClick={() => promote(id)} style={{ marginRight: 8 }}>
-                          Promote
-                        </button>
-                        <button onClick={() => removeRole(id)} style={{ marginRight: 8 }}>
-                          Remove Role
-                        </button>
-                        <button onClick={() => deleteUser(id)} style={{ color: 'red' }}>
+                        <select
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              assignRole(id, e.target.value);
+                              e.target.value = ''; // reset dropdown
+                            }
+                          }}
+                          style={{ marginRight: 8, padding: '4px 8px' }}
+                          defaultValue=""
+                        >
+                          <option value="" disabled>Assign Role</option>
+                          <option value="SUL">SUL</option>
+                          <option value="PL">PL</option>
+                          <option value="CX">CX</option>
+                        </select>
+                        <button onClick={() => deleteUser(id)} style={{ color: 'red', padding: '4px 8px' }}>
                           Delete
                         </button>
                       </>
@@ -174,6 +191,7 @@ export default function Masterlist(): React.ReactElement {
             })}
           </tbody>
         </table>
+        </>
       )}
     </section>
   );
