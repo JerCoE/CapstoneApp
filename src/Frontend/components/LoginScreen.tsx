@@ -1,149 +1,230 @@
-import React, { useState, useEffect } from 'react';
-import './LoginScreen.css';
-import { useMsal } from '@azure/msal-react';
-import { loginRequest } from '../../authConfig';
+import './styles/LoginScreen.css';
 
+import React, { useEffect, useState } from 'react';
+
+import { supabase } from '../lib/supabaseClient';
 
 type LoginScreenProps = {
-  onLogin?: (email?: string) => void;
+  onLogin?: (email?: string, role?: string) => void;
 };
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
-  const { instance, accounts } = useMsal();
   const [processing, setProcessing] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Toggle a body class while this component is mounted so background styles
-  // live in CSS (avoids assigning numeric values to style properties)
   useEffect(() => {
     document.body.classList.add('login-bg');
-    return () => {
-      document.body.classList.remove('login-bg');
-    };
+    return () => document.body.classList.remove('login-bg');
   }, []);
 
-  const handleLogin = async () => {
-    try {
-      // Step 1: Microsoft login popup
-      const loginResponse = await instance.loginPopup(loginRequest);
-      const idToken = loginResponse.idToken;
-
-      // Step 2: Acquire access token for Microsoft Graph API
-      let accessToken: string | undefined;
-      try {
-        const tokenResponse = await instance.acquireTokenSilent({ 
-          ...loginRequest, 
-          account: loginResponse.account 
-        });
-        accessToken = tokenResponse.accessToken;
-      } catch (silentErr) {
-        // Silent token acquisition failed, use popup fallback
-        const tokenResponse = await instance.acquireTokenPopup({ 
-          ...loginRequest, 
-          account: loginResponse.account 
-        });
-        accessToken = tokenResponse.accessToken;
-      }
-
-      if (!accessToken) {
-        console.error('❌ Could not obtain access token for Microsoft Graph');
-        return;
-      }
-
-      // Step 3: Fetch user profile from Microsoft Graph API
-      const profileRes = await fetch('https://graph.microsoft.com/v1.0/me', {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
-
-      if (!profileRes.ok) {
-        const text = await profileRes.text();
-        console.error('❌ Failed to fetch Graph profile', profileRes.status, text);
-        return;
-      }
-
-      const profile = await profileRes.json();
-      console.log('✅ Microsoft Graph profile fetched:', profile);
-
-  // Step 4: Send profile data to Supabase Edge Function
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-      const functionUrl = `${supabaseUrl}/functions/v1/microsoft-sync`;
+  // Check for existing session on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      console.log('🔍 LoginScreen: Checking for existing session...');
+      const { data: { session } } = await supabase.auth.getSession();
       
-      const backendRes = await fetch(functionUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': supabaseAnonKey,
-          'Authorization': `Bearer ${supabaseAnonKey}`
-        },
-        body: JSON.stringify({
-          id: profile.id,
-          email: profile.mail ?? profile.userPrincipalName,
-          display_name: profile.displayName,
-          given_name: profile.givenName,
-          surname: profile.surname,
-          job_title: profile.jobTitle,
-          department: profile.department,
-          office_location: profile.officeLocation,
-          preferred_language: profile.preferredLanguage,
-          mobile_phone: profile.mobilePhone,
-          metadata: profile,
-          id_token: idToken
-        })
-      });
-
-      if (!backendRes.ok) {
-        const body = await backendRes.text();
-        console.error('❌ Edge Function upsert failed', backendRes.status, body);
+      if (session) {
+        console.log('✅ Existing session found:', session.user);
+        await handleUserLogin(session.user.email, session.user.id);
       } else {
-        const result = await backendRes.json();
-        console.log('✅ Profile synced to Supabase:', result);
+        console.log('ℹ️ No existing session');
+      }
+    };
+
+    checkSession();
+  }, []);
+
+  // Listen for auth state changes
+  useEffect(() => {
+    console.log('🔍 LoginScreen: Setting up auth state listener...');
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔔 Auth state change:', event, session?.user?.email);
+      
+      if (event === 'SIGNED_IN' && session) {
+        console.log('✅ User signed in, processing login...');
+        await handleUserLogin(session.user.email, session.user.id);
+      }
+      
+      if (event === 'SIGNED_OUT') {
+        console.log('ℹ️ User signed out');
+        setProcessing(false);
+        setShowConfirm(false);
+      }
+    });
+
+    return () => {
+      console.log('🔍 LoginScreen: Cleaning up auth listener');
+      subscription.unsubscribe();
+    };
+  }, [onLogin]);
+
+  // Helper function to handle user login logic
+  const handleUserLogin = async (email: string | undefined, userId: string) => {
+    console.log('🔍 handleUserLogin called:', { email, userId });
+    
+    if (!email) {
+      console.error('❌ No email found in session');
+      setErrorMessage('No email found in session');
+      setProcessing(false);
+      return;
+    }
+
+    try {
+      console.log('🔍 Fetching user profile from database...');
+      
+      // Fetch user profile from database to determine role
+      let { data: profile, error } = await supabase
+        .from('users')
+        .select('roles')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('❌ Error fetching user profile:', error);
+        
+        // If user doesn't exist in users table yet, wait for trigger to complete
+        if (error.code === 'PGRST116') {
+          console.log('⏳ User profile not found, waiting for trigger...');
+          await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+          
+          // Try again
+          const retryResult = await supabase
+            .from('users')
+            .select('roles')
+            .eq('id', userId)
+            .single();
+          
+          if (retryResult.error) {
+            console.error('❌ Error fetching user profile on retry:', retryResult.error);
+            
+            // Last resort: Create the user manually
+            console.log('⚠️ Trigger may have failed, creating user manually...');
+            const { data: newUser, error: createError } = await supabase
+              .from('users')
+              .insert({
+                id: userId,
+                email: email,
+                roles: ['employee']
+              })
+              .select('roles')
+              .single();
+            
+            if (createError) {
+              console.error('❌ Failed to create user:', createError);
+              setErrorMessage('Failed to create user profile. Please contact support.');
+              setProcessing(false);
+              return;
+            }
+            
+            profile = newUser;
+          } else {
+            profile = retryResult.data;
+          }
+        } else {
+          setErrorMessage('Failed to fetch user profile');
+          setProcessing(false);
+          return;
+        }
       }
 
-      // show confirmation and redirect to dashboard (via parent) after a short delay
-      setProcessing(false);
+      // Determine role
+      const roles = Array.isArray(profile?.roles) ? profile.roles : ['employee'];
+      const role = roles.includes('admin') ? 'admin' : 'employee';
+      
+      console.log('✅ User profile found, role:', role);
       setShowConfirm(true);
-      setTimeout(() => {
-        if (onLogin) onLogin(profile.mail ?? profile.userPrincipalName ?? profile.id);
-      }, 700);
-    } catch (err) {
       setProcessing(false);
-      console.error('❌ Login failed', err);
+      setTimeout(() => {
+        console.log('🚀 Calling onLogin with:', { email, role });
+        onLogin?.(email, role);
+      }, 600);
+    } catch (err: any) {
+      console.error('❌ Error processing login:', err);
+      setErrorMessage(err.message ?? 'An error occurred during login');
+      setProcessing(false);
+    }
+  };
+
+  const handleLogin = async () => {
+    setProcessing(true);
+    setShowConfirm(false);
+    setErrorMessage(null);
+
+    console.log('🔍 Starting OAuth login...');
+
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'azure',
+        options: {
+          // Basic scopes so users sign in without consenting to Graph calendar unless needed.
+          scopes: 'openid profile email offline_access User.Read'
+          // Do NOT set prompt: 'consent'
+          // Optionally set redirectTo if you want a specific client-side callback:
+          // redirectTo: window.location.origin + '/auth/callback'
+        },
+      });
+
+      console.log('🔍 OAuth response:', { data, error });
+
+      if (error) {
+        throw error;
+      }
+
+      // If Supabase returned a URL, redirect explicitly (keeps behavior consistent)
+      if (data?.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      console.error('❌ Login failed:', err);
+      setErrorMessage(err.message ?? 'An unexpected error occurred during login');
+      setProcessing(false);
     }
   };
 
   return (
-   <div>
-    <div className="Pausepoint">
-      <span className="pausepoint-text">PausePoint</span>
-      <div className="BackgroundLogo">
-        <div className="BGtext">
-          <div className="login-container">
-            <h2 style={{ textAlign: 'center', fontWeight: '600', color: '#113372' }}>Login</h2>
-            {showConfirm && (
-              <div style={{ textAlign: 'center', color: '#0b3b66' }}>
-                Login successful — redirecting...
-              </div>
-            )}
-           {accounts.length > 0 ? (
-              <p style={{ textAlign: 'center', color: '#113372' }}>
-               {/* Welcome, {accounts[0].username} */}
-              </p> 
-            ) : (
+    <div>
+      <div className="Pausepoint">
+        <span className="pausepoint-text">PausePoint</span>
+        <div className="BackgroundLogo">
+          <div className="BGtext">
+            <div className="login-container">
+              <h2 style={{ textAlign: 'center', fontWeight: '600', color: '#113372' }}>Login</h2>
+
+              {errorMessage && (
+                <div style={{
+                  textAlign: 'center',
+                  color: '#d32f2f',
+                  backgroundColor: '#ffebee',
+                  padding: '12px',
+                  borderRadius: '4px',
+                  marginBottom: '16px'
+                }}>
+                  {errorMessage}
+                </div>
+              )}
+
+              {showConfirm && (
+                <div style={{ textAlign: 'center', color: '#0b3b66' }}>
+                  Login successful — redirecting...
+                </div>
+              )}
+
               <p style={{ textAlign: 'center', color: '#666' }}>
                 Sign in with your Microsoft account
               </p>
-            )}
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-              <button onClick={() => { setProcessing(true); handleLogin(); }} type="button" disabled={processing}>
-                {processing ? 'Signing in...' : 'Sign in with Microsoft'}
-              </button>
-            </div>
 
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                <button onClick={handleLogin} type="button" disabled={processing}>
+                  {processing ? 'Redirecting to Microsoft...' : 'Sign in with Microsoft'}
+                </button>
+              </div>
+
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </div>
   );
 };

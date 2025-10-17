@@ -1,4 +1,0 @@
-# Configuration for microsoft-sync Edge Function
-# This disables JWT verification so the function can be called without Supabase auth
-
-verify_jwt = false

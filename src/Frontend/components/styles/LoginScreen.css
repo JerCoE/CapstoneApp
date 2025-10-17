@@ -1,0 +1,164 @@
+/* src/Frontend/components/LoginScreen.css
+   Clean, conflict-free animated background + login card styles
+*/
+
+/* top-level vars for easy tuning */
+:root {
+  --login-bg-from: #f6f4f1;  /* dirty-white start */
+  --login-bg-to: #3B6EA5;    /* accent end */
+  --login-bg-speed: 9s;      /* animation duration */
+  --login-bg-angle: 135deg;  /* gradient direction */
+  --login-sheen-opacity: 0.06; /* subtle sheen on container */
+}
+
+/* Apply this class to <body> while LoginScreen is mounted */
+body.login-bg {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(var(--login-bg-angle), var(--login-bg-from) 0%, var(--login-bg-to) 100%);
+  background-size: 300% 300%;
+  animation: login-gradient-shift var(--login-bg-speed) ease-in-out infinite;
+}
+
+/* keyframes: smooth slow shift */
+@keyframes login-gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Background logo container (full-bleed positioning) */
+.BackgroundLogo {
+  background-image: url('../../assets/ERNI logo.png');
+  background-size: 600px;
+  background-position: 700px 50px;
+  background-repeat: no-repeat;
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+}
+
+/* Pausepoint block with local logo/text background */
+.Pausepoint {
+  position: relative;
+  z-index: 70; /* ensure text sits above container sheen */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-image: url('../../assets/ERNI logo.png');
+  background-position: 30px 175px;
+  background-repeat: no-repeat;
+  background-size: 75px;
+  min-height: 220px;
+  padding-top: 20px;
+}
+
+/* Text that sits next to the logo; adjust transform for pixel nudges */
+.pausepoint-text {
+  position: absolute;
+  left: 110px; /* tweak if needed */
+  top: 220px;  /* tweak if needed */
+  transform: translateY(-50%); /* vertical centering relative to given top */
+  font-weight: 600;            /* valid weight */
+  font-family: 'Lexend', sans-serif;
+  font-size: 48px;
+  color: #113372;
+  pointer-events: none;
+}
+
+/* Secondary background text area (if you use ERNI text image) */
+.BGtext {
+  background-image: url('../../assets/ERNI text.png');
+  text-align: center;
+  background-size: 400px;
+  background-position: 750px 700px;
+  background-repeat: no-repeat;
+  position: absolute;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Ensure login container sits above animated background */
+.login-container {
+ position: absolute;
+  top: 50%;
+  left: 10%;
+  transform: translate(-50%,-50%); /* exact center */
+  z-index: 50;
+  max-width: 460px;
+  width: calc(100% - 48px);         /* leave small gutters on narrow screens */
+  padding: 28px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.60); /* translucent card to improve contrast */
+  backdrop-filter: blur(4px);          /* subtle glass effect (optional) */
+  box-shadow: 0 8px 30px rgba(12, 20, 30, 0.12);
+  text-align: left;
+}
+
+/* gentle sheen overlay inside the card for extra polish */
+.login-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,var(--login-sheen-opacity)), rgba(255,255,255,0));
+  border-radius: 10px;
+  z-index: 60;
+}
+
+/* Form / inputs */
+.login-container h2 {
+  margin-bottom: 20px;
+}
+
+.login-container form div {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.login-container label {
+  margin-bottom: 5px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.login-container input,
+.input-field {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Buttons */
+.login-container button {
+  padding: 10px 20px;
+  width: 100%;
+  background-color: #004693;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.login-container button:hover {
+  background-color: #3b6ea5;
+}
+
+/* Responsive fallback */
+@media (max-width: 720px) {
+  .login-container {
+    margin: 18px;
+    padding: 20px;
+    max-width: calc(100% - 36px);
+  }
+
+  .pausepoint-text {
+    font-size: 36px;
+    left: 90px;
+    top: 160px;
+  }
+}

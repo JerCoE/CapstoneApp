@@ -7,8 +7,8 @@ import React, {
   useState,
   type KeyboardEvent,
 } from 'react';
-import './RequestForm.css'
-import './LeaveRequests.css';
+import './styles/RequestForm.css';
+import './styles/LeaveRequests.css';
 import { useMsal } from '@azure/msal-react';
 import { type SavedLeaveRequest, type LeaveType } from './types';
 

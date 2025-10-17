@@ -1,5 +1,5 @@
 import type { Configuration } from '@azure/msal-browser';
-
+ 
 const msalConfig: Configuration = {
   auth: {
     clientId: import.meta.env.VITE_MSAL_CLIENT_ID,
@@ -13,9 +13,10 @@ const msalConfig: Configuration = {
     },
   },
 };
-
+ 
 export const loginRequest = {
   scopes: ['openid', 'profile', 'User.Read', 'Calendars.Read']
 };
-
+ 
 export default msalConfig;
+ 
