@@ -5,6 +5,13 @@
   
 }
 
+.app-container{
+  max-width: 1180px; /* desktop mockup width */
+  margin: 0 auto;
+  padding: 20px 24px;
+  box-sizing: border-box;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -39,6 +46,138 @@ button {
 .card {
   padding: 2em;
   
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 460px 1fr; /* left / center / right */
+  gap: 20px;
+  align-items: start;
+  padding: 24px 12px;
+}
+
+.dashboard-home {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.main-middle {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+
+.mainboard{
+  display:flex;
+  gap:320px;
+  width:100%;
+  max-width:1180px;
+  align-items: flex-start; /* ensure right column doesn't vertically center */
+}
+
+.mainboard-panel{
+  background: #f3f6f8; /* pale panel behind left area */
+  border-radius: 12px;
+  padding: 24px;
+  width:100%;
+}
+
+.mainboard-left{
+  flex:1.6; /* make left area wider */
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+  padding-right: 10px;
+}
+
+.mainboard-right{
+  width:240px; /* narrower widgets to match mockup */
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  align-items: stretch;
+  align-self: flex-start; /* anchor to top of mainboard */
+  margin-top: 8px;
+}
+
+.large-card{
+  background:transparent;
+  padding: 10px 0;
+  padding-left: 10px;
+}
+
+.widget{ padding:12px }
+
+.mainboard-right .card{
+  box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.mainboard-right .widget.card{
+  padding: 14px;
+}
+
+/* add left separation from the pale panel */
+.mainboard-right{
+  margin-left: 6px;
+}
+
+/* Make upcoming card match width of leaves panel inside the left area */
+.mainboard-left .card{
+  width: 100%;
+}
+
+.mainboard-right .card{
+  width: 100%;
+}
+
+.left-column {
+  display: block;
+}
+
+.col {
+  min-height: 20px;
+}
+
+.center-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: center; /* center vertically */
+  align-items: center; /* center horizontally inside column */
+}
+
+.actions-card {
+  padding: 1em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80px;
+}
+
+.right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: stretch;
+}
+
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr; /* stack on smaller screens */
+    max-width: 680px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 720px){
+  .app-container{ padding: 12px; }
+  .mainboard{ gap:12px }
+  .mainboard-right{ width:100% }
+  .mainboard-left{ flex: 1 }
 }
 
 .read-the-docs {

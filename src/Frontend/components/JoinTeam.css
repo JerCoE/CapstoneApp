@@ -1,0 +1,3 @@
+.join-team ul{ list-style:none; padding:0; margin:0 }
+.join-team li{ padding:8px 0; display:flex; justify-content:space-between; align-items:center }
+.join-team .small{ background:#fff; border:1px solid #e2e8f0; border-radius:4px; padding:4px 6px }
