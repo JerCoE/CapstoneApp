@@ -1,0 +1,24 @@
+.onleave-card{
+  border:2px solid #2b6aa3;
+  border-radius:12px;
+  padding:12px 16px 18px 16px;
+  background: #fff;
+}
+.onleave-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px }
+.onleave-title h3{ margin:0; font-size:18px; color:#12263d }
+.onleave-sub{ color:#6b7b8f; font-size:13px }
+.onleave-month{ font-weight:700; color:#12263d }
+
+.onleave-table-wrap{ border-radius:8px; overflow:hidden; border:1px solid #2b6aa3 }
+.onleave-table{ width:100%; border-collapse:collapse }
+.onleave-table thead th{ background:#2b6aa3; color:white; padding:10px 12px; text-align:left; font-weight:600 }
+.onleave-table tbody td{ padding:12px; border-bottom:1px solid #e9f2fb }
+.onleave-table tbody tr.row--alt td{ background:#fbfdff }
+.onleave-table tbody tr:last-child td{ border-bottom:none }
+
+@media (max-width: 760px){
+  .onleave-table thead{ display:none }
+  .onleave-table tbody td{ display:block; width:100% }
+  .onleave-table tbody tr{ margin-bottom:10px; display:block; border:1px solid #e9f2fb; border-radius:8px; overflow:hidden }
+  .onleave-table tbody td{ padding:8px 10px }
+}

@@ -1,0 +1,20 @@
+.insights-card{
+  border:2px solid #2b6aa3;
+  border-radius:12px;
+  padding:10px;
+  width:240px;
+  background:#fff;
+}
+.insights-header{
+  padding:10px 12px; border-radius:10px; border:1px solid #d8e7f6; margin-bottom:10px; font-weight:700; color:#12263d
+}
+.insights-list{ display:flex; flex-direction:column; gap:10px }
+.insight-row{ display:flex; align-items:center; justify-content:space-between; padding:8px; border:1px solid #d8e7f6; border-radius:10px; background:#fff }
+.insight-left{ display:flex; align-items:center; gap:8px }
+.insight-dot{ width:12px; height:12px; border-radius:50%; display:inline-block }
+.insight-label{ font-weight:600 }
+.insight-count{ color:#6b7b8f; font-size:13px }
+
+@media (max-width: 760px){
+  .insights-card{ width:100% }
+}
